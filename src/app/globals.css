@@ -1,26 +1,74 @@
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f5f5f7;
+  --color-bg-tertiary: #e8e8ed;
+  --color-surface: #ffffff;
+  --color-surface-hover: rgba(0, 0, 0, 0.05);
+  --color-navbar: rgba(255, 255, 255, 0.8);
+  --color-navbar-border: #e6e6e8;
+
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-muted: #86868b;
+  --color-text-inverted: #ffffff;
+
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+
+  --color-accent: #0071e3;
+  --color-accent-hover: #0076df;
+  --color-accent-light: rgba(0, 113, 227, 0.08);
+  --color-accent-text: #0055b3;
+
+  --color-destructive: #dc2626;
+  --color-destructive-bg: #fef2f2;
+  --color-warning: #ca8a04;
+  --color-warning-bg: #fefce8;
+  --color-orange: #ea580c;
+  --color-orange-bg: #fff7ed;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
+  --color-surface: var(--color-surface);
+  --color-surface-secondary: var(--color-bg-secondary);
+  --color-border: var(--color-border);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-risk-critical: var(--color-destructive);
+  --color-risk-critical-bg: var(--color-destructive-bg);
+  --color-risk-high: var(--color-orange);
+  --color-risk-high-bg: var(--color-orange-bg);
+  --color-risk-medium: var(--color-warning);
+  --color-risk-medium-bg: var(--color-warning-bg);
+  --color-risk-low: var(--color-success);
+  --color-risk-low-bg: var(--color-success-bg);
+
+  --color-accent: var(--color-accent);
+  --color-accent-bg: var(--color-accent-light);
+  --color-accent-text: var(--color-accent-text);
+  --font-sans: "Inter Variable", "Inter", var(--font-geist-sans), sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-family: "Inter Variable", "Inter", var(--font-geist-sans), Arial, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Minimum touch target size per the mobile requirements. */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
 }

@@ -1,0 +1,174 @@
+[
+  {
+    "id": "followup_001",
+    "placementId": "placement_017",
+    "dueDate": "2026-09-05",
+    "description": "Check in on new tooling access.",
+    "owner": "Morgan Ellis",
+    "completedAt": "2026-09-06",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-29"
+  },
+  {
+    "id": "followup_002",
+    "placementId": "placement_023",
+    "dueDate": "2026-09-14",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-07"
+  },
+  {
+    "id": "followup_003",
+    "placementId": "placement_035",
+    "dueDate": "2026-09-10",
+    "description": "Verify onboarding checklist completion.",
+    "owner": "Taylor Brooks",
+    "createdAt": "2026-09-03"
+  },
+  {
+    "id": "followup_004",
+    "placementId": "placement_033",
+    "dueDate": "2026-09-14",
+    "description": "Verify onboarding checklist completion.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-07"
+  },
+  {
+    "id": "followup_005",
+    "placementId": "placement_014",
+    "dueDate": "2026-09-06",
+    "description": "Confirm client received the revised schedule.",
+    "owner": "Jamie Ortiz",
+    "completedAt": "2026-09-07",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-30"
+  },
+  {
+    "id": "followup_006",
+    "placementId": "placement_019",
+    "dueDate": "2026-09-12",
+    "description": "Check in on new tooling access.",
+    "owner": "Taylor Brooks",
+    "createdAt": "2026-09-05"
+  },
+  {
+    "id": "followup_007",
+    "placementId": "placement_035",
+    "dueDate": "2026-09-18",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Taylor Brooks",
+    "createdAt": "2026-09-11"
+  },
+  {
+    "id": "followup_008",
+    "placementId": "placement_036",
+    "dueDate": "2026-09-06",
+    "description": "Verify onboarding checklist completion.",
+    "owner": "Morgan Ellis",
+    "completedAt": "2026-09-07",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-30"
+  },
+  {
+    "id": "followup_009",
+    "placementId": "placement_003",
+    "dueDate": "2026-09-07",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Jamie Ortiz",
+    "completedAt": "2026-09-08",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-31"
+  },
+  {
+    "id": "followup_010",
+    "placementId": "placement_023",
+    "dueDate": "2026-09-18",
+    "description": "Verify onboarding checklist completion.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-11"
+  },
+  {
+    "id": "followup_011",
+    "placementId": "placement_027",
+    "dueDate": "2026-09-15",
+    "description": "Verify onboarding checklist completion.",
+    "owner": "Taylor Brooks",
+    "createdAt": "2026-09-08"
+  },
+  {
+    "id": "followup_012",
+    "placementId": "placement_029",
+    "dueDate": "2026-09-16",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Taylor Brooks",
+    "createdAt": "2026-09-09"
+  },
+  {
+    "id": "followup_013",
+    "placementId": "placement_033",
+    "dueDate": "2026-09-08",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-01"
+  },
+  {
+    "id": "followup_014",
+    "placementId": "placement_002",
+    "dueDate": "2026-09-08",
+    "description": "Confirm client received the revised schedule.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-01"
+  },
+  {
+    "id": "followup_015",
+    "placementId": "placement_027",
+    "dueDate": "2026-09-06",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Taylor Brooks",
+    "completedAt": "2026-09-07",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-30"
+  },
+  {
+    "id": "followup_016",
+    "placementId": "placement_008",
+    "dueDate": "2026-09-15",
+    "description": "Check in on new tooling access.",
+    "owner": "Morgan Ellis",
+    "createdAt": "2026-09-08"
+  },
+  {
+    "id": "followup_017",
+    "placementId": "placement_001",
+    "dueDate": "2026-09-05",
+    "description": "Confirm client received the revised schedule.",
+    "owner": "Taylor Brooks",
+    "completedAt": "2026-09-06",
+    "outcome": "Completed on time.",
+    "createdAt": "2026-08-29"
+  },
+  {
+    "id": "followup_018",
+    "placementId": "placement_034",
+    "dueDate": "2026-09-18",
+    "description": "Check in on new tooling access.",
+    "owner": "Morgan Ellis",
+    "createdAt": "2026-09-11"
+  },
+  {
+    "id": "followup_019",
+    "placementId": "placement_012",
+    "dueDate": "2026-09-17",
+    "description": "Follow up on outstanding invoice question.",
+    "owner": "Morgan Ellis",
+    "createdAt": "2026-09-10"
+  },
+  {
+    "id": "followup_020",
+    "placementId": "placement_009",
+    "dueDate": "2026-09-08",
+    "description": "Confirm client received the revised schedule.",
+    "owner": "Jamie Ortiz",
+    "createdAt": "2026-09-01"
+  }
+]

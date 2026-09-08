@@ -1,69 +1,116 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+import { TopBar } from "@/components/layout/TopBar";
+import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
+import { PriorityCardView } from "@/components/dashboard/PriorityCardView";
+import { PlacementHealthCard } from "@/components/dashboard/PlacementHealthCard";
+import { InsightsSection } from "@/components/dashboard/InsightsSection";
+import { ActionSheet } from "@/components/dashboard/ActionSheet";
+import { AllCaughtUpState } from "@/components/ui/EmptyState";
+import { StorageFailureBanner, MalformedRecordBanner } from "@/components/ui/Banner";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
+import { useStoreData, useStorageMode, useMalformedRecordCount } from "@/store/useStore";
+import {
+  buildAllPlacementContexts,
+  buildSummaryTiles,
+  buildPriorityQueue,
+  groupBySection,
+  filterByTile,
+  buildHealthDistribution,
+  type SummaryTileKey,
+  type PriorityCard,
+  type PrioritySection,
+} from "@/domain/rules";
+import { getDemoToday, formatHuman } from "@/domain/dates";
+import Link from "next/link";
+
+const SECTION_META: Record<PrioritySection, { title: string; description: string }> = {
+  escalate_now: { title: "Escalate now", description: "Mandatory-escalation conditions are met." },
+  contact_today: { title: "Contact today", description: "Silence risk or a due checkpoint." },
+  confirm_fix_held: { title: "Confirm the fix held", description: "Follow-up confirmation windows are due." },
+  next_three_days: { title: "Next three days", description: "Upcoming scheduled work." },
+};
+
+export default function HomePage() {
+  const { seed } = useStoreData();
+  const storageMode = useStorageMode();
+  const malformedCount = useMalformedRecordCount();
+  const [activeFilter, setActiveFilter] = useState<SummaryTileKey | null>(null);
+  const [activeCard, setActiveCard] = useState<PriorityCard | null>(null);
+  const today = getDemoToday();
+
+  const contexts = useMemo(() => buildAllPlacementContexts(seed), [seed]);
+  const tiles = useMemo(() => buildSummaryTiles(contexts, today), [contexts, today]);
+  const filteredContexts = useMemo(
+    () => (activeFilter ? filterByTile(contexts, activeFilter, today) : contexts),
+    [contexts, activeFilter, today],
+  );
+  const cards = useMemo(() => buildPriorityQueue(filteredContexts, today), [filteredContexts, today]);
+  const grouped = useMemo(() => groupBySection(cards), [cards]);
+  const healthDistribution = useMemo(() => buildHealthDistribution(contexts, today), [contexts, today]);
+
+  const hasAnyWork = cards.length > 0;
+
+  if (contexts.length === 0) {
+    return <DashboardSkeleton />;
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-1 flex-col">
+      <TopBar title="Home" />
+      <main className="flex-1 space-y-6 p-4 pb-8">
+        {storageMode === "temporary" && <StorageFailureBanner />}
+        {malformedCount > 0 && <MalformedRecordBanner count={malformedCount} />}
+
+        <div>
+          <p className="text-sm text-text-muted">{formatHuman(today)}</p>
+          <h2 className="text-xl font-semibold tracking-[-0.02em]">Who do I contact today?</h2>
+        </div>
+
+        <SummaryTiles
+          tiles={tiles}
+          activeFilter={activeFilter}
+          onToggleFilter={(key) => setActiveFilter((cur) => (cur === key ? null : key))}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <Link href="/placements/new">
+          <Button variant="primary" fullWidth>
+            + Add Placement
+          </Button>
+        </Link>
+
+        {!hasAnyWork ? (
+          <AllCaughtUpState />
+        ) : (
+          (Object.keys(SECTION_META) as PrioritySection[]).map((section) => {
+            const sectionCards = grouped[section];
+            if (sectionCards.length === 0) return null;
+            return (
+              <section key={section} className="space-y-2">
+                <div>
+                  <h3 className="text-sm font-semibold tracking-[-0.01em]">
+                    {SECTION_META[section].title} <span className="text-text-muted font-normal">({sectionCards.length})</span>
+                  </h3>
+                  <p className="text-xs text-text-muted">{SECTION_META[section].description}</p>
+                </div>
+                <div className="space-y-3">
+                  {sectionCards.map((card) => (
+                    <PriorityCardView key={card.id} card={card} onPrimaryAction={setActiveCard} />
+                  ))}
+                </div>
+              </section>
+            );
+          })
+        )}
+
+        <PlacementHealthCard distribution={healthDistribution} />
+
+        <InsightsSection contexts={contexts} today={today} />
       </main>
+
+      <ActionSheet card={activeCard} onClose={() => setActiveCard(null)} />
     </div>
   );
 }
