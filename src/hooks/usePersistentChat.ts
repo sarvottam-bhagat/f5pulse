@@ -1,0 +1,271 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  mapChatMessageRow,
+  mapChatSessionRow,
+  type ChatMessageRow,
+  type ChatSessionRow,
+} from "@/domain/chat/databaseTypes";
+import type {
+  ChatContextAttachment,
+  ChatMessage,
+  ChatSession,
+} from "@/domain/chat/types";
+import {
+  ensureAnonymousSession,
+  getBrowserSupabase,
+} from "@/lib/supabase/browser";
+
+interface ChatTurnResponse {
+  session: ChatSession;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+}
+
+export interface PersistentChatGateway {
+  initialize(): Promise<{ accessToken: string; sessions: ChatSession[] }>;
+  loadMessages(sessionId: string): Promise<ChatMessage[]>;
+  sendTurn(input: {
+    accessToken: string;
+    sessionId?: string;
+    placementId?: string;
+    userMessage: string;
+  }): Promise<ChatTurnResponse>;
+  deleteSession(input: { accessToken: string; sessionId: string }): Promise<void>;
+  subscribeToToken(onToken: (accessToken: string | null) => void): () => void;
+}
+
+function newestFirst(sessions: ChatSession[]): ChatSession[] {
+  return [...sessions].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+}
+
+export const browserChatGateway: PersistentChatGateway = {
+  async initialize() {
+    const client = getBrowserSupabase();
+    const session = await ensureAnonymousSession(client.auth);
+    const { data, error } = await client
+      .from("chat_sessions")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error("Chat history is temporarily unavailable.");
+    return {
+      accessToken: session.access_token,
+      sessions: ((data ?? []) as ChatSessionRow[]).map(mapChatSessionRow),
+    };
+  },
+
+  async loadMessages(sessionId) {
+    const client = getBrowserSupabase();
+    const { data, error } = await client
+      .from("chat_messages")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error("Chat history is temporarily unavailable.");
+    return ((data ?? []) as ChatMessageRow[]).map(mapChatMessageRow);
+  },
+
+  async sendTurn(input) {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${input.accessToken}`,
+      },
+      body: JSON.stringify({
+        sessionId: input.sessionId,
+        placementId: input.placementId,
+        userMessage: input.userMessage,
+      }),
+    });
+    const body = await response.json().catch(() => null) as
+      | (ChatTurnResponse & { ok?: boolean })
+      | { error?: string }
+      | null;
+    if (!response.ok || !body || !("session" in body)) {
+      throw new Error(body && "error" in body && body.error
+        ? body.error
+        : "Your message could not be sent. Please retry.");
+    }
+    return {
+      session: body.session,
+      userMessage: body.userMessage,
+      assistantMessage: body.assistantMessage,
+    };
+  },
+
+  async deleteSession({ sessionId }) {
+    const client = getBrowserSupabase();
+    const { error } = await client.from("chat_sessions").delete().eq("id", sessionId);
+    if (error) throw new Error("This conversation could not be deleted.");
+  },
+
+  subscribeToToken(onToken) {
+    const client = getBrowserSupabase();
+    const { data } = client.auth.onAuthStateChange((_event, session) => {
+      onToken(session?.access_token ?? null);
+    });
+    return () => data.subscription.unsubscribe();
+  },
+};
+
+type ChatStatus = "loading" | "ready" | "error";
+
+interface SendInput {
+  context: ChatContextAttachment;
+  userMessage: string;
+}
+
+export interface PersistentChatState {
+  status: ChatStatus;
+  historyError: string | null;
+  sendError: string | null;
+  sessions: ChatSession[];
+  activeSession: ChatSession | null;
+  messages: ChatMessage[];
+  pending: boolean;
+  selectSession(sessionId: string): Promise<void>;
+  startNewConversation(): void;
+  sendMessage(input: SendInput): Promise<void>;
+  retry(): Promise<void>;
+  retryHistory(): Promise<void>;
+  deleteSession(sessionId: string): Promise<void>;
+}
+
+export function usePersistentChat({
+  gateway = browserChatGateway,
+}: {
+  gateway?: PersistentChatGateway;
+} = {}): PersistentChatState {
+  const gatewayRef = useRef(gateway);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [status, setStatus] = useState<ChatStatus>("loading");
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [lastAttempt, setLastAttempt] = useState<SendInput | null>(null);
+
+  const initialize = useCallback(async () => {
+    setStatus("loading");
+    setHistoryError(null);
+    try {
+      const result = await gatewayRef.current.initialize();
+      setAccessToken(result.accessToken);
+      setSessions(newestFirst(result.sessions));
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+      setHistoryError("Chat history is temporarily unavailable.");
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.resolve().then(() => {
+      if (!cancelled) return initialize();
+    });
+    const unsubscribe = gatewayRef.current.subscribeToToken(setAccessToken);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [initialize]);
+
+  const activeSession = useMemo(
+    () => sessions.find((session) => session.id === activeSessionId) ?? null,
+    [activeSessionId, sessions],
+  );
+
+  const selectSession = useCallback(async (sessionId: string) => {
+    setActiveSessionId(sessionId);
+    setSendError(null);
+    try {
+      const messages = await gatewayRef.current.loadMessages(sessionId);
+      setSessions((current) => current.map((session) =>
+        session.id === sessionId ? { ...session, messages } : session));
+    } catch {
+      setHistoryError("Chat history is temporarily unavailable.");
+    }
+  }, []);
+
+  const startNewConversation = useCallback(() => {
+    setActiveSessionId(null);
+    setSendError(null);
+    setLastAttempt(null);
+  }, []);
+
+  const sendMessage = useCallback(async (input: SendInput) => {
+    if (!accessToken || pending) return;
+    const selected = sessions.find((session) => session.id === activeSessionId) ?? null;
+    setPending(true);
+    setSendError(null);
+    setLastAttempt(input);
+    try {
+      const result = await gatewayRef.current.sendTurn(selected
+        ? {
+            accessToken,
+            sessionId: selected.id,
+            userMessage: input.userMessage,
+          }
+        : {
+            accessToken,
+            placementId: input.context.placementId,
+            userMessage: input.userMessage,
+          });
+      const previousMessages = selected?.messages ?? [];
+      const updated: ChatSession = {
+        ...result.session,
+        messages: [...previousMessages, result.userMessage, result.assistantMessage],
+      };
+      setSessions((current) => newestFirst([
+        updated,
+        ...current.filter((session) => session.id !== updated.id),
+      ]));
+      setActiveSessionId(updated.id);
+      if (result.assistantMessage.status === "failed") {
+        setSendError("AI is temporarily unavailable. The saved fallback can be retried.");
+      } else {
+        setLastAttempt(null);
+      }
+    } catch {
+      setSendError("Your message could not be sent. Please retry.");
+    } finally {
+      setPending(false);
+    }
+  }, [accessToken, activeSessionId, pending, sessions]);
+
+  const retry = useCallback(async () => {
+    if (lastAttempt) await sendMessage(lastAttempt);
+  }, [lastAttempt, sendMessage]);
+
+  const deleteSession = useCallback(async (sessionId: string) => {
+    if (!accessToken) return;
+    try {
+      await gatewayRef.current.deleteSession({ accessToken, sessionId });
+      setSessions((current) => current.filter((session) => session.id !== sessionId));
+      setActiveSessionId((current) => current === sessionId ? null : current);
+    } catch {
+      setHistoryError("This conversation could not be deleted.");
+    }
+  }, [accessToken]);
+
+  return {
+    status,
+    historyError,
+    sendError,
+    sessions,
+    activeSession,
+    messages: activeSession?.messages ?? [],
+    pending,
+    selectSession,
+    startNewConversation,
+    sendMessage,
+    retry,
+    retryHistory: initialize,
+    deleteSession,
+  };
+}
