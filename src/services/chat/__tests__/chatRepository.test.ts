@@ -56,4 +56,19 @@ describe("chat database row mapping", () => {
       createdAt: "2026-09-09T08:01:00.000Z",
     });
   });
+
+  it("maps a session without placement fields to general chat context", () => {
+    const row: ChatSessionRow = {
+      id: "session-general",
+      user_id: "user-1",
+      placement_id: null,
+      client_id: null,
+      professional_id: null,
+      title: "Who should I contact today?",
+      created_at: "2026-09-09T08:00:00.000Z",
+      updated_at: "2026-09-09T08:01:00.000Z",
+    };
+
+    expect(mapChatSessionRow(row).context).toBeNull();
+  });
 });

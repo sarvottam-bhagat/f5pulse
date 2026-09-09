@@ -37,7 +37,7 @@ export interface ChatConversation {
 export interface ChatSession {
   id: string;
   title: string;
-  context: ChatContextAttachment;
+  context: ChatContextAttachment | null;
   viewMode: ChatViewMode;
   messages: ChatMessage[];
   createdAt?: string;

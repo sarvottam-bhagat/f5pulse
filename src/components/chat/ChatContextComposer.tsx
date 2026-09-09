@@ -70,7 +70,7 @@ export function ChatContextComposer({
   }
 
   function handleSend() {
-    if (!context || !text.trim()) return;
+    if (!text.trim()) return;
     onSend(text.trim());
     setText("");
     setMention(null);
@@ -159,7 +159,7 @@ export function ChatContextComposer({
             disabled={disabled}
             className="max-h-32 min-h-11 flex-1 resize-none bg-transparent py-3 text-base leading-6 text-foreground outline-none placeholder:text-text-muted disabled:cursor-not-allowed"
           />
-          <Button variant="primary" aria-label="Send message" className="mb-0.5 h-12 w-12 shrink-0 rounded-full p-0 text-xl" onClick={handleSend} disabled={disabled || !context || !text.trim()}>
+          <Button variant="primary" aria-label="Send message" className="mb-0.5 h-12 w-12 shrink-0 rounded-full p-0 text-xl" onClick={handleSend} disabled={disabled || !text.trim()}>
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
               <path d="M12 18V6m0 0-5 5m5-5 5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

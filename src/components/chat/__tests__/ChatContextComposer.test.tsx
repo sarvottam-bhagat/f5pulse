@@ -121,4 +121,27 @@ describe("ChatContextComposer", () => {
     expect(container.textContent).toContain("Select a client with @ first");
     expect(container.textContent).not.toContain("Alex Rivera");
   });
+
+  it("sends a general question when no client or professional is attached", async () => {
+    const onSend = vi.fn();
+    await act(async () => root.render(
+      <ChatContextComposer
+        seed={seedWithActivePlacement()}
+        context={null}
+        selectedClientId={null}
+        onSelectClient={() => undefined}
+        onAttachContext={() => undefined}
+        onClearClient={() => undefined}
+        onClearProfessional={() => undefined}
+        onSend={onSend}
+      />,
+    ));
+
+    await type("How many clients need contact today?");
+    const send = container.querySelector<HTMLButtonElement>('button[aria-label="Send message"]')!;
+    expect(send.disabled).toBe(false);
+
+    await act(async () => send.click());
+    expect(onSend).toHaveBeenCalledWith("How many clients need contact today?");
+  });
 });

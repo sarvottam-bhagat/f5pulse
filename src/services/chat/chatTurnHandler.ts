@@ -8,6 +8,11 @@ import {
   F5_AGENT_SYSTEM_PROMPT,
 } from "@/domain/chat/agentPrompt";
 import { summarizePlacement } from "@/domain/chat/deterministicSummaries";
+import {
+  buildAgentPortfolioContext,
+  serializeAgentPortfolioContext,
+  summarizePortfolio,
+} from "@/domain/chat/portfolioContext";
 import type {
   ChatContextAttachment,
   ChatMessage,
@@ -18,7 +23,7 @@ import type { Seed } from "@/domain/types";
 
 export interface ChatRepositoryPort {
   getSession(sessionId: string): Promise<ChatSession | null>;
-  createSession(input: { title: string; context: ChatContextAttachment }): Promise<ChatSession>;
+  createSession(input: { title: string; context: ChatContextAttachment | null }): Promise<ChatSession>;
   listMessages(sessionId: string): Promise<ChatMessage[]>;
   createMessage(input: {
     sessionId: string;
@@ -43,6 +48,7 @@ interface ChatTurnDependencies {
     onTextDelta?: (delta: string) => void | Promise<void>;
   }): Promise<string>;
   now(): string;
+  today?(): string;
 }
 
 export interface ChatTurnCallbacks {
@@ -111,28 +117,37 @@ export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
           return { ok: false, status: 404, message: "This conversation is no longer available." };
         }
       } else {
-        const placement = request.seed.placements.find((item) => item.id === request.placementId);
-        if (!placement || placement.archived || placement.status !== "Active") {
-          return { ok: false, status: 400, message: "Choose an active professional before sending a message." };
-        }
-        session = await scope.repository.createSession({
-          title: sessionTitle(userMessageText),
-          context: {
+        let context: ChatContextAttachment | null = null;
+        if (request.placementId) {
+          const placement = request.seed.placements.find((item) => item.id === request.placementId);
+          if (!placement || placement.archived || placement.status !== "Active") {
+            return { ok: false, status: 400, message: "Choose an active professional before sending a message." };
+          }
+          context = {
             placementId: placement.id,
             clientId: placement.clientId,
             professionalId: placement.professionalId,
-          },
+          };
+        }
+        session = await scope.repository.createSession({
+          title: sessionTitle(userMessageText),
+          context,
         });
       }
 
-      const context = buildAgentPlacementContext(
-        request.seed,
-        session.context.placementId,
-        dependencies.now().slice(0, 10),
-      );
-      if (!context || context.placement.status !== "Active") {
+      const asOf = dependencies.today?.() ?? dependencies.now().slice(0, 10);
+      const placementContext = session.context
+        ? buildAgentPlacementContext(request.seed, session.context.placementId, asOf)
+        : null;
+      if (session.context && (!placementContext || placementContext.placement.status !== "Active")) {
         return { ok: false, status: 400, message: "Choose an active professional before sending a message." };
       }
+      const portfolioContext = session.context
+        ? null
+        : buildAgentPortfolioContext(request.seed, asOf);
+      const serializedContext = placementContext
+        ? serializeAgentPlacementContext(placementContext)
+        : serializeAgentPortfolioContext(portfolioContext!);
 
       const history = await scope.repository.listMessages(session.id);
       const storedUserMessage = await scope.repository.createMessage({
@@ -147,7 +162,7 @@ export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
         // Client disconnects must not prevent the saved turn from completing.
       }
       const input = buildAgentInput({
-        serializedContext: serializeAgentPlacementContext(context),
+        serializedContext,
         history: history
           .filter((message): message is ChatMessage & { role: "user" | "assistant" } =>
             message.role === "user" || message.role === "assistant")
@@ -175,7 +190,9 @@ export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
           },
         });
       } catch {
-        assistantContent = summarizePlacement(context, context.asOf);
+        assistantContent = placementContext
+          ? summarizePlacement(placementContext, placementContext.asOf)
+          : summarizePortfolio(portfolioContext!);
         assistantStatus = "failed";
         assistantMetadata = { fallback: true };
       }

@@ -138,6 +138,34 @@ describe("createChatTurnHandler", () => {
     expect(fake.messages.get(result.session.id)).toHaveLength(2);
   });
 
+  it("creates a general session and sends portfolio context when no placement is attached", async () => {
+    const fake = createFakeRepository();
+    let serializedInput = "";
+    const handler = createChatTurnHandler({
+      authenticate: async () => authenticated(fake.repository),
+      runAgent: async ({ input }) => {
+        serializedInput = String(input[0]?.content ?? "");
+        return "You have 1 active client.";
+      },
+      now: () => "2026-09-09T08:05:00.000Z",
+      today: () => "2026-09-08",
+    });
+
+    const result = await handler({
+      accessToken: "token",
+      userMessage: "How many clients do we have?",
+      seed: makeSeed(),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.session.context).toBeNull();
+    expect(serializedInput).toContain('"scope": "portfolio"');
+    expect(serializedInput).toContain('"asOf": "2026-09-08"');
+    expect(serializedInput).toContain('"activeClients": 1');
+    expect(result.assistantMessage.content).toBe("You have 1 active client.");
+  });
+
   it("continues an owned session using its stored placement", async () => {
     const fake = createFakeRepository();
     const existing = await fake.repository.createSession({
@@ -152,7 +180,7 @@ describe("createChatTurnHandler", () => {
 
     const result = await handler({ accessToken: "token", sessionId: existing.id, placementId: "replacement-from-browser", userMessage: "Continue", seed: makeSeed() });
 
-    expect(result.ok && result.session.context.placementId).toBe("placement-1");
+    expect(result.ok && result.session.context?.placementId).toBe("placement-1");
   });
 
   it("returns not found for an inaccessible session", async () => {

@@ -44,15 +44,15 @@ export class ChatRepository implements ChatRepositoryPort {
 
   async createSession(input: {
     title: string;
-    context: ChatContextAttachment;
+    context: ChatContextAttachment | null;
   }): Promise<ChatSession> {
     const { data, error } = await this.client
       .from("chat_sessions")
       .insert({
         user_id: this.userId,
-        placement_id: input.context.placementId,
-        client_id: input.context.clientId,
-        professional_id: input.context.professionalId,
+        placement_id: input.context?.placementId ?? null,
+        client_id: input.context?.clientId ?? null,
+        professional_id: input.context?.professionalId ?? null,
         title: input.title,
       })
       .select("*")

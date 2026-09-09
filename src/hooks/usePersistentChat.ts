@@ -157,7 +157,7 @@ export const browserChatGateway: PersistentChatGateway = {
 type ChatStatus = "loading" | "ready" | "error";
 
 interface SendInput {
-  context: ChatContextAttachment;
+  context: ChatContextAttachment | null;
   userMessage: string;
 }
 
@@ -270,7 +270,7 @@ export function usePersistentChat({
           }
         : {
             accessToken,
-            placementId: input.context.placementId,
+            ...(input.context ? { placementId: input.context.placementId } : {}),
             userMessage: input.userMessage,
           }, {
             onUserMessage({ session, userMessage }) {

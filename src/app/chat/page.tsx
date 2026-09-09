@@ -53,7 +53,7 @@ function ChatPageInner() {
 
   const activeSession = chat.activeSession;
   const context = activeSession?.context ?? draftContext;
-  const selectedClientId = activeSession?.context.clientId ?? draftClientId;
+  const selectedClientId = activeSession?.context?.clientId ?? draftClientId;
   const messages = chat.messages;
   const currentPending = chat.pending;
   const currentFailed = Boolean(chat.sendError);
@@ -76,7 +76,6 @@ function ChatPageInner() {
   }
 
   function handleSend(prompt: string) {
-    if (!context) return;
     void chat.sendMessage({ context, userMessage: prompt });
   }
 
@@ -191,7 +190,7 @@ function ChatPageInner() {
             </div>
             <div className="border-t border-border/70 bg-white px-3 pb-4 pt-2 sm:px-6">
               <div className="mx-auto w-full max-w-3xl">
-                <CapabilityBar onSelect={handleCapability} disabled={currentPending} />
+                {context && <CapabilityBar onSelect={handleCapability} disabled={currentPending} />}
                 {composer("compact", currentPending)}
               </div>
             </div>

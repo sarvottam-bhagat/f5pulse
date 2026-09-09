@@ -183,6 +183,39 @@ describe("usePersistentChat", () => {
     expect(current?.messages).toHaveLength(4);
   });
 
+  it("starts a general conversation without sending a placement id", async () => {
+    const created = { ...session("general", "2026-09-09T09:00:00.000Z"), context: null };
+    const sendTurn = vi.fn(async (_input: {
+      accessToken: string;
+      sessionId?: string;
+      placementId?: string;
+      userMessage: string;
+    }) => {
+      void _input;
+      return {
+        session: created,
+        userMessage: message("u-general", "user", "Who needs contact today?"),
+        assistantMessage: message("a-general", "assistant", "One client needs contact."),
+      };
+    });
+    const gateway: PersistentChatGateway = {
+      initialize: async () => ({ accessToken: "token", sessions: [] }),
+      loadMessages: async () => [],
+      sendTurn,
+      deleteSession: async () => undefined,
+      subscribeToToken: () => () => undefined,
+    };
+
+    await renderHook(gateway);
+    await act(async () => current?.sendMessage({ context: null, userMessage: "Who needs contact today?" }));
+
+    expect(sendTurn.mock.calls[0][0]).toEqual({
+      accessToken: "token",
+      userMessage: "Who needs contact today?",
+    });
+    expect(current?.activeSession?.context).toBeNull();
+  });
+
   it("keeps a failed question retryable and supports new/delete flows", async () => {
     const existing = session("existing", "2026-09-09T09:00:00.000Z");
     let attempt = 0;

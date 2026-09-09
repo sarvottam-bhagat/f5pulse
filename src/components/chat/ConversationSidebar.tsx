@@ -77,12 +77,12 @@ export function ConversationSidebar({
         ) : sessions.length === 0 ? (
           <div className="rounded-[1.5rem] bg-surface-secondary px-4 py-5">
             <p className="text-sm font-medium">No conversations yet</p>
-            <p className="mt-1 text-xs leading-5 text-text-muted">Use @ for a client, then / for their professional.</p>
+            <p className="mt-1 text-xs leading-5 text-text-muted">Ask generally, or use @ and / for placement context.</p>
           </div>
         ) : (
           sessions.map((session) => {
-            const client = seed.clients.find((item) => item.id === session.context.clientId);
-            const professional = seed.professionals.find((item) => item.id === session.context.professionalId);
+            const client = seed.clients.find((item) => item.id === session.context?.clientId);
+            const professional = seed.professionals.find((item) => item.id === session.context?.professionalId);
             const selected = session.id === activeSessionId;
 
             return (
@@ -101,7 +101,9 @@ export function ConversationSidebar({
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{session.title}</span>
                       <span className={`mt-1 block truncate text-xs ${selected ? "text-white/65" : "text-text-muted"}`}>
-                        {client?.companyName ?? "Client"} · {professional?.fullName ?? "Professional"}
+                        {session.context
+                          ? `${client?.companyName ?? "Client"} · ${professional?.fullName ?? "Professional"}`
+                          : "General operations"}
                       </span>
                     </span>
                     <time className={`shrink-0 pt-0.5 text-[10px] ${selected ? "text-white/55" : "text-text-muted"}`}>

@@ -3,9 +3,9 @@ import type { ChatMessage, ChatMessageStatus, ChatSession } from "./types";
 export interface ChatSessionRow {
   id: string;
   user_id: string;
-  placement_id: string;
-  client_id: string;
-  professional_id: string;
+  placement_id: string | null;
+  client_id: string | null;
+  professional_id: string | null;
   title: string;
   created_at: string;
   updated_at: string;
@@ -23,14 +23,17 @@ export interface ChatMessageRow {
 }
 
 export function mapChatSessionRow(row: ChatSessionRow): ChatSession {
+  const context = row.placement_id && row.client_id && row.professional_id
+    ? {
+        placementId: row.placement_id,
+        clientId: row.client_id,
+        professionalId: row.professional_id,
+      }
+    : null;
   return {
     id: row.id,
     title: row.title,
-    context: {
-      placementId: row.placement_id,
-      clientId: row.client_id,
-      professionalId: row.professional_id,
-    },
+    context,
     viewMode: "client",
     messages: [],
     createdAt: row.created_at,

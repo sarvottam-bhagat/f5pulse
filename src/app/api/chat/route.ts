@@ -7,6 +7,7 @@ import {
 } from "@/services/chat/chatTurnHandler";
 import { runOpenAIAgent } from "@/services/chat/openaiAgent";
 import { loadOriginalSeed } from "@/store/seedData";
+import { getDemoToday } from "@/domain/dates";
 import {
   encodeChatStreamEvent,
   type ChatStreamEvent,
@@ -30,6 +31,7 @@ const handleChatTurn = createChatTurnHandler({
     onTextDelta,
   }),
   now: () => new Date().toISOString(),
+  today: getDemoToday,
 });
 
 function optionalString(value: unknown): string | undefined {
