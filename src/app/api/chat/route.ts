@@ -1,51 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { CHAT_SYSTEM_PROMPT } from "@/domain/chat/promptContext";
+import { createUserScopedSupabase } from "@/lib/supabase/server";
+import { ChatRepository } from "@/services/chat/chatRepository";
+import {
+  createChatTurnHandler,
+  readBearerToken,
+} from "@/services/chat/chatTurnHandler";
+import { runOpenAIAgent } from "@/services/chat/openaiAgent";
+import { loadOriginalSeed } from "@/store/seedData";
 
 export const runtime = "nodejs";
 
-interface ChatRequestBody {
-  placementContext: string;
-  userMessage: string;
-  history: { role: "user" | "assistant"; content: string }[];
+const handleChatTurn = createChatTurnHandler({
+  async authenticate(accessToken) {
+    const client = createUserScopedSupabase(accessToken);
+    const { data, error } = await client.auth.getUser(accessToken);
+    if (error || !data.user) return null;
+    return {
+      userId: data.user.id,
+      repository: new ChatRepository(client, data.user.id),
+    };
+  },
+  runAgent: ({ instructions, input }) => runOpenAIAgent({ instructions, input }),
+  now: () => new Date().toISOString(),
+});
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
 }
 
-export async function POST(req: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI service is not configured." }, { status: 503 });
-  }
+export async function POST(request: NextRequest) {
+  const token = readBearerToken(request.headers.get("authorization"));
+  const body = await request.json().catch(() => null);
+  const record = body && typeof body === "object"
+    ? body as Record<string, unknown>
+    : {};
+  const result = await handleChatTurn({
+    accessToken: token,
+    sessionId: optionalString(record.sessionId),
+    placementId: optionalString(record.placementId),
+    userMessage: record.userMessage,
+    seed: loadOriginalSeed(),
+  });
 
-  let body: ChatRequestBody;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
-
-  const { placementContext, userMessage, history } = body;
-  if (!userMessage || typeof userMessage !== "string") {
-    return NextResponse.json({ error: "Missing userMessage." }, { status: 400 });
-  }
-
-  try {
-    const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1024,
-      system: `${CHAT_SYSTEM_PROMPT}\n\nPLACEMENT CONTEXT:\n${placementContext}`,
-      messages: [
-        ...(history ?? []).map((m) => ({ role: m.role, content: m.content })),
-        { role: "user" as const, content: userMessage },
-      ],
-    });
-
-    const textBlock = response.content.find((b) => b.type === "text");
-    const text = textBlock && "text" in textBlock ? textBlock.text : "";
-
-    return NextResponse.json({ content: text });
-  } catch (err) {
-    console.error("Chat API error:", err);
-    return NextResponse.json({ error: "AI service failed." }, { status: 502 });
-  }
+  return NextResponse.json(
+    result.ok ? result : { error: result.message },
+    { status: result.ok ? 200 : result.status },
+  );
 }

@@ -15,12 +15,15 @@ export interface ChatContextAttachment {
 }
 
 export type ChatMessageRole = "user" | "assistant" | "system";
+export type ChatMessageStatus = "pending" | "complete" | "failed";
 
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  status?: ChatMessageStatus;
+  metadata?: Record<string, unknown>;
   proposedActions?: ProposedAction[];
   isFallback?: boolean;
 }
@@ -29,4 +32,14 @@ export interface ChatConversation {
   context: ChatContextAttachment | null;
   viewMode: ChatViewMode;
   messages: ChatMessage[];
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  context: ChatContextAttachment;
+  viewMode: ChatViewMode;
+  messages: ChatMessage[];
+  createdAt?: string;
+  updatedAt: string;
 }
