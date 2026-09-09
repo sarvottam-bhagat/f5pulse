@@ -260,3 +260,23 @@ export function groupBySection(cards: PriorityCard[]): Record<PrioritySection, P
   }
   return groups;
 }
+
+export function buildDashboardLanes(cards: PriorityCard[]): {
+  attention: PriorityCard[];
+  upcoming: PriorityCard[];
+} {
+  return {
+    attention: cards.filter((card) => card.section !== "next_three_days"),
+    upcoming: cards.filter((card) => card.section === "next_three_days"),
+  };
+}
+
+export function resolveDashboardLane(
+  current: "attention" | "upcoming",
+  attentionCount: number,
+  upcomingCount: number,
+): "attention" | "upcoming" {
+  if (current === "upcoming" && upcomingCount === 0 && attentionCount > 0) return "attention";
+  if (current === "attention" && attentionCount === 0 && upcomingCount > 0) return "upcoming";
+  return current;
+}

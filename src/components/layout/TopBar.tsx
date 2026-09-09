@@ -14,12 +14,9 @@ export function TopBar({ title }: { title: string }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--color-navbar)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-accent">F5 Pulse</p>
-          <h1 className="text-lg font-semibold leading-tight tracking-[-0.02em]">{title}</h1>
-        </div>
+    <header className="bg-background">
+      <div className="flex items-center justify-between gap-4 py-3">
+        <h1 className="text-xl font-semibold leading-tight tracking-[-0.03em]">{title}</h1>
         <div className="flex items-center gap-2">
           {mode === "temporary" && (
             <span className="rounded-full bg-risk-medium-bg px-2.5 py-1 text-[11px] font-medium text-risk-medium">

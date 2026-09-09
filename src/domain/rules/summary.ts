@@ -6,6 +6,7 @@ import type { PlacementContext } from "./context";
 import { assessHealth } from "./health";
 import { assessSilence } from "./silence";
 import { dueFollowupWindows } from "./issueLifecycle";
+import { detectMandatoryEscalations } from "./escalation";
 
 export type SummaryTileKey =
   | "contacts_due_today"
@@ -32,8 +33,11 @@ export function contactsDueTodayPredicate(ctx: PlacementContext, asOf: string): 
   return silence.level !== "none" || dueFeedback || dueProCheckin;
 }
 
-export function escalationsPredicate(ctx: PlacementContext): boolean {
-  return ctx.escalations.some((e) => e.status !== "resolved");
+export function escalationsPredicate(ctx: PlacementContext, asOf: string): boolean {
+  return (
+    ctx.escalations.some((e) => e.status !== "resolved") ||
+    detectMandatoryEscalations(ctx, asOf).length > 0
+  );
 }
 
 export function trialPlacementPredicate(ctx: PlacementContext, asOf: string): boolean {
@@ -58,7 +62,7 @@ export const SUMMARY_TILE_DEFS: {
   predicate: (ctx: PlacementContext, asOf: string) => boolean;
 }[] = [
   { key: "contacts_due_today", label: "Contacts due today", predicate: contactsDueTodayPredicate },
-  { key: "escalations", label: "Escalations", predicate: (ctx) => escalationsPredicate(ctx) },
+  { key: "escalations", label: "Escalate now", predicate: escalationsPredicate },
   { key: "trial_placements", label: "Trial placements", predicate: trialPlacementPredicate },
   { key: "silent_clients", label: "Silent clients", predicate: silentClientPredicate },
   { key: "overdue_checkins", label: "Overdue check-ins", predicate: overdueCheckinPredicate },

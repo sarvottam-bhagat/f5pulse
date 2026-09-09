@@ -20,15 +20,19 @@ export function ContextHeader({
   const professional = context ? seed.professionals.find((p) => p.id === context.professionalId) : null;
 
   return (
-    <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border">
-      <button onClick={onOpenPicker} className="tap-target flex-1 min-w-0 text-left">
+    <div aria-label="Chat context" className="flex flex-wrap items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={onOpenPicker}
+        className="tap-target min-w-0 max-w-full rounded-full border border-border bg-white px-4 text-left transition-colors hover:bg-surface-secondary"
+      >
         {context ? (
           <div className="truncate">
-            <span className="text-sm font-medium">{client?.companyName}</span>
-            <span className="text-sm text-text-muted"> · {professional?.fullName}</span>
+            <span className="text-xs font-medium">{client?.companyName}</span>
+            <span className="text-xs text-text-muted"> · {professional?.fullName}</span>
           </div>
         ) : (
-          <span className="text-sm text-accent font-medium">+ Attach context</span>
+          <span className="text-xs font-medium text-accent">+ Attach placement context</span>
         )}
       </button>
 

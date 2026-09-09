@@ -12,10 +12,13 @@ export function PlacementHealthCard({ distribution }: { distribution: HealthDist
   const total = SEGMENTS.reduce((sum, s) => sum + distribution[s.key], 0) || 1;
 
   return (
-    <Card className="space-y-4">
-      <h3 className="text-sm font-semibold tracking-[-0.01em]">Placement health</h3>
+    <Card className="flex min-h-64 flex-col p-6">
+      <div className="mb-5">
+        <h3 className="text-lg font-semibold tracking-[-0.025em]">Placement health</h3>
+        <p className="mt-1 text-xs text-text-muted">Current state across active placements</p>
+      </div>
 
-      <div className="flex h-2.5 rounded-full overflow-hidden bg-background gap-px">
+      <div className="mb-7 flex h-2 overflow-hidden rounded-full bg-background gap-px">
         {SEGMENTS.map((seg) => {
           const count = distribution[seg.key];
           if (count === 0) return null;
@@ -31,12 +34,12 @@ export function PlacementHealthCard({ distribution }: { distribution: HealthDist
         })}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-5">
         {SEGMENTS.map((seg) => (
           <div key={seg.key} className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-medium">{distribution[seg.key]}</span>
+              <span className="text-sm font-semibold tabular-nums">{distribution[seg.key]}</span>
               <span className="text-xs text-text-muted">{seg.label}</span>
             </div>
           </div>

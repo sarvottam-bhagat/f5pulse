@@ -8,3 +8,4 @@ export * from "./summary";
 export * from "./clientView";
 export * from "./professionalView";
 export * from "./timeline";
+export * from "./clientDirectory";

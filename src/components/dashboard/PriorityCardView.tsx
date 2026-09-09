@@ -3,7 +3,6 @@
 import Link from "next/link";
 import type { PriorityCard, RecommendedAction } from "@/domain/rules";
 import { RiskBadge } from "@/components/ui/RiskBadge";
-import { Button } from "@/components/ui/Button";
 import { formatHuman } from "@/domain/dates";
 
 const ACTION_LABELS: Record<RecommendedAction, string> = {
@@ -24,54 +23,48 @@ export function PriorityCardView({
   onPrimaryAction: (card: PriorityCard) => void;
 }) {
   return (
-    <div className="rounded-[20px] bg-surface-secondary p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
+    <article
+      role="listitem"
+      className="rounded-2xl border border-transparent bg-background p-4 transition-colors hover:border-border"
+      title={card.whyHere}
+    >
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-semibold leading-tight tracking-[-0.01em] truncate">{card.clientName}</p>
-          <p className="text-sm text-text-muted truncate">{card.professionalName}</p>
+          <p className="truncate text-sm font-semibold leading-tight tracking-[-0.015em]">{card.clientName}</p>
+          <p className="mt-0.5 truncate text-xs text-text-muted">{card.professionalName}</p>
         </div>
         <RiskBadge level={card.riskLevel} />
       </div>
 
-      <div>
-        <p className="text-xs font-medium text-text-muted">
-          Contact: <span className="text-foreground">{card.contactWho === "client" ? "Client" : "Professional"}</span>
+      <p className="mt-3 line-clamp-2 text-sm leading-snug text-foreground">{card.reason}</p>
+      {card.evidence[0] && <p className="mt-1 truncate text-xs text-text-muted">{card.evidence[0]}</p>}
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
+        <p className="text-[11px] font-medium text-text-muted">
+          Contact {card.contactWho === "client" ? "client" : "professional"} · {formatHuman(card.dueAt.slice(0, 10))}
         </p>
-        <p className="text-sm">{card.reason}</p>
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`/chat?placementId=${card.placementId}`}
+            className="tap-target inline-flex items-center rounded-full px-2.5 text-xs font-medium text-accent transition-colors hover:bg-accent-bg"
+          >
+            Chat
+          </Link>
+          <Link
+            href={`/placements/${card.placementId}`}
+            className="tap-target inline-flex items-center rounded-full px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-secondary"
+          >
+            View
+          </Link>
+          <button
+            type="button"
+            onClick={() => onPrimaryAction(card)}
+            className="tap-target inline-flex items-center rounded-full bg-[#1d1d1f] px-3 text-xs font-medium text-white transition-transform active:scale-[0.98]"
+          >
+            {ACTION_LABELS[card.recommendedAction]}
+          </button>
+        </div>
       </div>
-
-      {card.evidence.length > 0 && (
-        <ul className="space-y-1 rounded-2xl bg-background px-3 py-2 text-xs text-text-secondary">
-          {card.evidence.map((e, i) => (
-            <li key={i}>• {e}</li>
-          ))}
-        </ul>
-      )}
-
-      <div className="flex items-center justify-between text-xs text-text-muted">
-        <span>Due {formatHuman(card.dueAt.slice(0, 10))}</span>
-      </div>
-
-      <details className="text-xs text-text-muted">
-        <summary className="cursor-pointer select-none font-medium text-accent">Why this is here</summary>
-        <p className="mt-1">{card.whyHere}</p>
-      </details>
-
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Button variant="primary" className="text-xs px-3 py-2" onClick={() => onPrimaryAction(card)}>
-          {ACTION_LABELS[card.recommendedAction]}
-        </Button>
-        <Link href={`/chat?placementId=${card.placementId}`}>
-          <Button variant="secondary" className="text-xs px-3 py-2">
-            Investigate in Chat
-          </Button>
-        </Link>
-        <Link href={`/placements/${card.placementId}`}>
-          <Button variant="ghost" className="text-xs px-3 py-2">
-            View placement
-          </Button>
-        </Link>
-      </div>
-    </div>
+    </article>
   );
 }

@@ -14,18 +14,25 @@ describe("summary tiles", () => {
     expect(trialPlacementPredicate(pastTrial, TODAY)).toBe(false);
   });
 
-  it("counts escalations tile from open escalations only", () => {
+  it("counts saved and automatically detected mandatory escalations consistently", () => {
     const withOpen = makeContext({
       placement: { id: "p1" },
       escalations: [makeEscalation({ placementId: "p1", status: "open" })],
     });
-    const withResolved = makeContext({
-      placement: { id: "p2" },
-      escalations: [makeEscalation({ placementId: "p2", status: "resolved" })],
+    const withMandatoryTrigger = makeContext({
+      placement: { id: "p2", trialEndDate: "2026-09-30" },
+      feedback: [makeFeedback({ placementId: "p2", scheduledFor: "2026-09-01", attemptCount: 2 })],
     });
-    const tiles = buildSummaryTiles([withOpen, withResolved], TODAY);
+    const withResolved = makeContext({
+      placement: { id: "p3" },
+      escalations: [makeEscalation({ placementId: "p3", status: "resolved" })],
+    });
+    const contexts = [withOpen, withMandatoryTrigger, withResolved];
+    const tiles = buildSummaryTiles(contexts, TODAY);
     const escalationsTile = tiles.find((t) => t.key === "escalations")!;
-    expect(escalationsTile.count).toBe(1);
+    expect(escalationsTile.label).toBe("Escalate now");
+    expect(escalationsTile.count).toBe(2);
+    expect(filterByTile(contexts, "escalations", TODAY)).toEqual([withOpen, withMandatoryTrigger]);
   });
 
   it("each tile acts as a filter returning a subset of contexts", () => {

@@ -4,11 +4,16 @@ import { ProposedActionCard } from "./ProposedActionCard";
 export function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[85%] space-y-2`}>
+    <div className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
+      {!isUser && (
+        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[10px] font-semibold text-white">
+          F5
+        </div>
+      )}
+      <div className="max-w-[85%] space-y-2 md:max-w-[75%]">
         <div
-          className={`rounded-[20px] px-4 py-2.5 text-sm whitespace-pre-wrap ${
-            isUser ? "bg-accent text-white" : "bg-surface-secondary text-foreground"
+          className={`rounded-[22px] px-4 py-3 text-sm leading-6 whitespace-pre-wrap ${
+            isUser ? "bg-surface-secondary text-foreground" : "bg-white text-foreground"
           }`}
         >
           {message.content}
