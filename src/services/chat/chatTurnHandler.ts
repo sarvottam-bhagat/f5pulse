@@ -37,8 +37,17 @@ export interface AuthenticatedChatScope {
 
 interface ChatTurnDependencies {
   authenticate(accessToken: string): Promise<AuthenticatedChatScope | null>;
-  runAgent(input: { instructions: string; input: EasyInputMessage[] }): Promise<string>;
+  runAgent(input: {
+    instructions: string;
+    input: EasyInputMessage[];
+    onTextDelta?: (delta: string) => void | Promise<void>;
+  }): Promise<string>;
   now(): string;
+}
+
+export interface ChatTurnCallbacks {
+  onUserMessage?(value: { session: ChatSession; userMessage: ChatMessage }): void | Promise<void>;
+  onTextDelta?(delta: string): void | Promise<void>;
 }
 
 export interface ChatTurnRequest {
@@ -69,7 +78,10 @@ export function readBearerToken(header: string | null): string | null {
 }
 
 export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
-  return async function handleChatTurn(request: ChatTurnRequest): Promise<ChatTurnResult> {
+  return async function handleChatTurn(
+    request: ChatTurnRequest,
+    callbacks: ChatTurnCallbacks = {},
+  ): Promise<ChatTurnResult> {
     if (typeof request.userMessage !== "string") {
       return { ok: false, status: 400, message: "Enter a message before sending." };
     }
@@ -129,6 +141,11 @@ export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
         content: userMessageText,
         status: "complete",
       });
+      try {
+        await callbacks.onUserMessage?.({ session, userMessage: storedUserMessage });
+      } catch {
+        // Client disconnects must not prevent the saved turn from completing.
+      }
       const input = buildAgentInput({
         serializedContext: serializeAgentPlacementContext(context),
         history: history
@@ -149,6 +166,13 @@ export function createChatTurnHandler(dependencies: ChatTurnDependencies) {
         assistantContent = await dependencies.runAgent({
           instructions: F5_AGENT_SYSTEM_PROMPT,
           input,
+          onTextDelta: async (delta) => {
+            try {
+              await callbacks.onTextDelta?.(delta);
+            } catch {
+              // Continue generating and persisting even if the stream closes.
+            }
+          },
         });
       } catch {
         assistantContent = summarizePlacement(context, context.asOf);

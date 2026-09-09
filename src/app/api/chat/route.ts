@@ -7,6 +7,10 @@ import {
 } from "@/services/chat/chatTurnHandler";
 import { runOpenAIAgent } from "@/services/chat/openaiAgent";
 import { loadOriginalSeed } from "@/store/seedData";
+import {
+  encodeChatStreamEvent,
+  type ChatStreamEvent,
+} from "@/domain/chat/streamProtocol";
 
 export const runtime = "nodejs";
 
@@ -20,7 +24,11 @@ const handleChatTurn = createChatTurnHandler({
       repository: new ChatRepository(client, data.user.id),
     };
   },
-  runAgent: ({ instructions, input }) => runOpenAIAgent({ instructions, input }),
+  runAgent: ({ instructions, input, onTextDelta }) => runOpenAIAgent({
+    instructions,
+    input,
+    onTextDelta,
+  }),
   now: () => new Date().toISOString(),
 });
 
@@ -34,16 +42,53 @@ export async function POST(request: NextRequest) {
   const record = body && typeof body === "object"
     ? body as Record<string, unknown>
     : {};
-  const result = await handleChatTurn({
-    accessToken: token,
-    sessionId: optionalString(record.sessionId),
-    placementId: optionalString(record.placementId),
-    userMessage: record.userMessage,
-    seed: loadOriginalSeed(),
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      let open = true;
+      const send = (event: ChatStreamEvent) => {
+        if (!open) return;
+        controller.enqueue(encoder.encode(encodeChatStreamEvent(event)));
+      };
+
+      void handleChatTurn({
+        accessToken: token,
+        sessionId: optionalString(record.sessionId),
+        placementId: optionalString(record.placementId),
+        userMessage: record.userMessage,
+        seed: loadOriginalSeed(),
+      }, {
+        onUserMessage: ({ session, userMessage }) => send({ type: "user", session, userMessage }),
+        onTextDelta: (delta) => send({ type: "delta", delta }),
+      }).then((result) => {
+        if (result.ok) {
+          send({
+            type: "done",
+            session: result.session,
+            userMessage: result.userMessage,
+            assistantMessage: result.assistantMessage,
+          });
+        } else {
+          send({ type: "error", error: result.message });
+        }
+      }).catch(() => {
+        send({ type: "error", error: "Your message could not be sent. Please retry." });
+      }).finally(() => {
+        if (!open) return;
+        open = false;
+        controller.close();
+      });
+    },
+    cancel() {
+      // The handler intentionally continues so the complete turn is persisted.
+    },
   });
 
-  return NextResponse.json(
-    result.ok ? result : { error: result.message },
-    { status: result.ok ? 200 : result.status },
-  );
+  return new NextResponse(stream, {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

@@ -67,6 +67,75 @@ describe("usePersistentChat", () => {
     });
   }
 
+  it("shows the submitted question immediately while the server is still responding", async () => {
+    let finish: ((value: {
+      session: ChatSession;
+      userMessage: ChatMessage;
+      assistantMessage: ChatMessage;
+    }) => void) | undefined;
+    const response = new Promise<{
+      session: ChatSession;
+      userMessage: ChatMessage;
+      assistantMessage: ChatMessage;
+    }>((resolve) => { finish = resolve; });
+    const created = session("created", "2026-09-09T09:00:00.000Z");
+    const gateway: PersistentChatGateway = {
+      initialize: async () => ({ accessToken: "token", sessions: [] }),
+      loadMessages: async () => [],
+      sendTurn: async () => response,
+      deleteSession: async () => undefined,
+      subscribeToToken: () => () => undefined,
+    };
+
+    await renderHook(gateway);
+    await act(async () => {
+      void current?.sendMessage({ context, userMessage: "Visible now" });
+      await Promise.resolve();
+    });
+
+    expect(current?.messages).toMatchObject([
+      { role: "user", content: "Visible now", status: "complete" },
+      { role: "assistant", content: "", status: "pending" },
+    ]);
+
+    await act(async () => finish?.({
+      session: created,
+      userMessage: message("u1", "user", "Visible now"),
+      assistantMessage: message("a1", "assistant", "Done"),
+    }));
+  });
+
+  it("updates the pending assistant message as streamed deltas arrive", async () => {
+    const created = session("streamed", "2026-09-09T09:00:00.000Z");
+    const storedUser = message("u-stream", "user", "Stream it");
+    const storedAssistant = message("a-stream", "assistant", "Hello world");
+    const gateway = {
+      initialize: async () => ({ accessToken: "token", sessions: [] }),
+      loadMessages: async () => [],
+      sendTurn: async (_input: unknown, stream: {
+        onUserMessage(value: { session: ChatSession; userMessage: ChatMessage }): void;
+        onTextDelta(delta: string): void;
+      }) => {
+        stream.onUserMessage({ session: created, userMessage: storedUser });
+        stream.onTextDelta("Hello");
+        await Promise.resolve();
+        stream.onTextDelta(" world");
+        return { session: created, userMessage: storedUser, assistantMessage: storedAssistant };
+      },
+      deleteSession: async () => undefined,
+      subscribeToToken: () => () => undefined,
+    } as unknown as PersistentChatGateway;
+
+    await renderHook(gateway);
+    await act(async () => current?.sendMessage({ context, userMessage: "Stream it" }));
+
+    expect(current?.messages.at(-1)).toMatchObject({
+      role: "assistant",
+      content: "Hello world",
+      status: "complete",
+    });
+  });
+
   it("initializes anonymous history newest-first and restores selected messages", async () => {
     const older = session("older", "2026-09-09T08:00:00.000Z");
     const newer = session("newer", "2026-09-09T09:00:00.000Z");

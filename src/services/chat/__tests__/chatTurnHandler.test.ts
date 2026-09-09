@@ -81,6 +81,31 @@ function authenticated(repository: ChatRepositoryPort): AuthenticatedChatScope {
 }
 
 describe("createChatTurnHandler", () => {
+  it("reports the saved user message before forwarding assistant deltas", async () => {
+    const fake = createFakeRepository();
+    const events: string[] = [];
+    const handler = createChatTurnHandler({
+      authenticate: async () => authenticated(fake.repository),
+      runAgent: async ({ onTextDelta }) => {
+        await onTextDelta?.("Streaming");
+        await onTextDelta?.(" answer");
+        return "Streaming answer";
+      },
+      now: () => "2026-09-09T08:05:00.000Z",
+    });
+
+    const result = await handler(
+      { accessToken: "token", placementId: "placement-1", userMessage: "Question", seed: makeSeed() },
+      {
+        onUserMessage: () => { events.push("user"); },
+        onTextDelta: (delta) => { events.push(delta); },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(events).toEqual(["user", "Streaming", " answer"]);
+  });
+
   it("rejects missing bearer identity before persistence", async () => {
     const fake = createFakeRepository();
     const handler = createChatTurnHandler({

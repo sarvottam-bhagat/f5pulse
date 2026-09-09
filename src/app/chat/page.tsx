@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CapabilityBar, type CapabilityKey } from "@/components/chat/CapabilityBar";
 import { ChatContextComposer } from "@/components/chat/ChatContextComposer";
@@ -57,6 +57,14 @@ function ChatPageInner() {
   const messages = chat.messages;
   const currentPending = chat.pending;
   const currentFailed = Boolean(chat.sendError);
+  const hasConversation = messages.length > 0;
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [messages]);
 
   function scrollToLatest(behavior: ScrollBehavior = "smooth") {
     window.setTimeout(() => {
@@ -69,7 +77,7 @@ function ChatPageInner() {
 
   function handleSend(prompt: string) {
     if (!context) return;
-    void chat.sendMessage({ context, userMessage: prompt }).then(() => scrollToLatest());
+    void chat.sendMessage({ context, userMessage: prompt });
   }
 
   function handleCapability(key: CapabilityKey) {
@@ -173,12 +181,11 @@ function ChatPageInner() {
       )}
 
       <main className={`h-full transition-[padding] duration-200 ${desktopSidebarOpen ? "md:pl-[264px]" : "md:pl-0"}`}>
-        {activeSession ? (
+        {hasConversation ? (
           <div className="flex h-full min-h-0 flex-col">
             <div ref={scrollRef} className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-28 sm:px-6">
               <div className="mx-auto w-full max-w-3xl space-y-5">
                 {messages.map((message) => <MessageBubble key={message.id} message={message} />)}
-                {currentPending && <p className="pl-11 text-sm text-text-muted">Thinking…</p>}
                 {currentFailed && <RetryableError message={chat.sendError ?? "The response could not be completed."} onRetry={handleRetry} />}
               </div>
             </div>

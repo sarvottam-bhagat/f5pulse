@@ -13,6 +13,10 @@ import type {
   ChatSession,
 } from "@/domain/chat/types";
 import {
+  createChatStreamParser,
+  type ChatStreamEvent,
+} from "@/domain/chat/streamProtocol";
+import {
   ensureAnonymousSession,
   getBrowserSupabase,
 } from "@/lib/supabase/browser";
@@ -31,6 +35,9 @@ export interface PersistentChatGateway {
     sessionId?: string;
     placementId?: string;
     userMessage: string;
+  }, callbacks: {
+    onUserMessage(value: { session: ChatSession; userMessage: ChatMessage }): void;
+    onTextDelta(delta: string): void;
   }): Promise<ChatTurnResponse>;
   deleteSession(input: { accessToken: string; sessionId: string }): Promise<void>;
   subscribeToToken(onToken: (accessToken: string | null) => void): () => void;
@@ -38,6 +45,31 @@ export interface PersistentChatGateway {
 
 function newestFirst(sessions: ChatSession[]): ChatSession[] {
   return [...sessions].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+}
+
+let optimisticMessageNumber = 0;
+
+function optimisticMessage(
+  role: "user" | "assistant",
+  content: string,
+  status: "complete" | "pending",
+): ChatMessage {
+  optimisticMessageNumber += 1;
+  return {
+    id: `optimistic-${optimisticMessageNumber}`,
+    role,
+    content,
+    status,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function replaceMessage(
+  messages: ChatMessage[],
+  messageId: string,
+  update: (message: ChatMessage) => ChatMessage,
+): ChatMessage[] {
+  return messages.map((message) => message.id === messageId ? update(message) : message);
 }
 
 export const browserChatGateway: PersistentChatGateway = {
@@ -67,7 +99,7 @@ export const browserChatGateway: PersistentChatGateway = {
     return ((data ?? []) as ChatMessageRow[]).map(mapChatMessageRow);
   },
 
-  async sendTurn(input) {
+  async sendTurn(input, callbacks) {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
@@ -80,20 +112,31 @@ export const browserChatGateway: PersistentChatGateway = {
         userMessage: input.userMessage,
       }),
     });
-    const body = await response.json().catch(() => null) as
-      | (ChatTurnResponse & { ok?: boolean })
-      | { error?: string }
-      | null;
-    if (!response.ok || !body || !("session" in body)) {
-      throw new Error(body && "error" in body && body.error
-        ? body.error
-        : "Your message could not be sent. Please retry.");
+    if (!response.ok || !response.body) {
+      throw new Error("Your message could not be sent. Please retry.");
     }
-    return {
-      session: body.session,
-      userMessage: body.userMessage,
-      assistantMessage: body.assistantMessage,
-    };
+
+    let completed: ChatTurnResponse | null = null;
+    let streamError: string | null = null;
+    const parser = createChatStreamParser((event: ChatStreamEvent) => {
+      if (event.type === "user") callbacks.onUserMessage(event);
+      if (event.type === "delta") callbacks.onTextDelta(event.delta);
+      if (event.type === "done") completed = event;
+      if (event.type === "error") streamError = event.error;
+    });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      parser.push(decoder.decode(value, { stream: true }));
+    }
+    parser.push(decoder.decode());
+    parser.finish();
+
+    if (streamError) throw new Error(streamError);
+    if (!completed) throw new Error("The response stream ended unexpectedly. Please retry.");
+    return completed;
   },
 
   async deleteSession({ sessionId }) {
@@ -146,6 +189,7 @@ export function usePersistentChat({
   const [sendError, setSendError] = useState<string | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [draftMessages, setDraftMessages] = useState<ChatMessage[]>([]);
   const [pending, setPending] = useState(false);
   const [lastAttempt, setLastAttempt] = useState<SendInput | null>(null);
 
@@ -182,6 +226,7 @@ export function usePersistentChat({
 
   const selectSession = useCallback(async (sessionId: string) => {
     setActiveSessionId(sessionId);
+    setDraftMessages([]);
     setSendError(null);
     try {
       const messages = await gatewayRef.current.loadMessages(sessionId);
@@ -194,6 +239,7 @@ export function usePersistentChat({
 
   const startNewConversation = useCallback(() => {
     setActiveSessionId(null);
+    setDraftMessages([]);
     setSendError(null);
     setLastAttempt(null);
   }, []);
@@ -201,9 +247,20 @@ export function usePersistentChat({
   const sendMessage = useCallback(async (input: SendInput) => {
     if (!accessToken || pending) return;
     const selected = sessions.find((session) => session.id === activeSessionId) ?? null;
+    const optimisticUser = optimisticMessage("user", input.userMessage, "complete");
+    const optimisticAssistant = optimisticMessage("assistant", "", "pending");
+    const previousMessages = selected?.messages ?? [];
+    if (selected) {
+      setSessions((current) => current.map((session) => session.id === selected.id
+        ? { ...session, messages: [...previousMessages, optimisticUser, optimisticAssistant] }
+        : session));
+    } else {
+      setDraftMessages([optimisticUser, optimisticAssistant]);
+    }
     setPending(true);
     setSendError(null);
     setLastAttempt(input);
+    let streamedSessionId = selected?.id ?? null;
     try {
       const result = await gatewayRef.current.sendTurn(selected
         ? {
@@ -215,8 +272,41 @@ export function usePersistentChat({
             accessToken,
             placementId: input.context.placementId,
             userMessage: input.userMessage,
+          }, {
+            onUserMessage({ session, userMessage }) {
+              streamedSessionId = session.id;
+              const streamingSession: ChatSession = {
+                ...session,
+                messages: [...previousMessages, userMessage, optimisticAssistant],
+              };
+              setSessions((current) => newestFirst([
+                streamingSession,
+                ...current.filter((item) => item.id !== session.id),
+              ]));
+              setActiveSessionId(session.id);
+              setDraftMessages([]);
+            },
+            onTextDelta(delta) {
+              if (!streamedSessionId) {
+                setDraftMessages((current) => replaceMessage(
+                  current,
+                  optimisticAssistant.id,
+                  (message) => ({ ...message, content: message.content + delta }),
+                ));
+                return;
+              }
+              setSessions((current) => current.map((session) => session.id === streamedSessionId
+                ? {
+                    ...session,
+                    messages: replaceMessage(
+                      session.messages,
+                      optimisticAssistant.id,
+                      (message) => ({ ...message, content: message.content + delta }),
+                    ),
+                  }
+                : session));
+            },
           });
-      const previousMessages = selected?.messages ?? [];
       const updated: ChatSession = {
         ...result.session,
         messages: [...previousMessages, result.userMessage, result.assistantMessage],
@@ -226,12 +316,31 @@ export function usePersistentChat({
         ...current.filter((session) => session.id !== updated.id),
       ]));
       setActiveSessionId(updated.id);
+      setDraftMessages([]);
       if (result.assistantMessage.status === "failed") {
         setSendError("AI is temporarily unavailable. The saved fallback can be retried.");
       } else {
         setLastAttempt(null);
       }
     } catch {
+      if (streamedSessionId) {
+        setSessions((current) => current.map((session) => session.id === streamedSessionId
+          ? {
+              ...session,
+              messages: replaceMessage(
+                session.messages,
+                optimisticAssistant.id,
+                (message) => ({ ...message, status: "failed" }),
+              ),
+            }
+          : session));
+      } else {
+        setDraftMessages((current) => replaceMessage(
+          current,
+          optimisticAssistant.id,
+          (message) => ({ ...message, status: "failed" }),
+        ));
+      }
       setSendError("Your message could not be sent. Please retry.");
     } finally {
       setPending(false);
@@ -259,7 +368,7 @@ export function usePersistentChat({
     sendError,
     sessions,
     activeSession,
-    messages: activeSession?.messages ?? [],
+    messages: activeSession?.messages ?? draftMessages,
     pending,
     selectSession,
     startNewConversation,
