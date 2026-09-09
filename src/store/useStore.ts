@@ -3,20 +3,23 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { getStore, Store } from "./Store";
 import type { Seed } from "../domain/types";
+import { loadOriginalSeed } from "./seedData";
+
+const serverSeedSnapshot = loadOriginalSeed();
 
 /**
  * Subscribes a component to the store and returns the current seed data.
  * Re-renders whenever any mutation is applied. Uses useSyncExternalStore
- * so this is safe under concurrent rendering and SSR (server snapshot
- * falls back to the same seed loader, avoiding hydration mismatches since
- * the seed JSON is static).
+ * so this is safe under concurrent rendering and SSR. Hydration always
+ * starts from the original server seed; React then reads the browser store
+ * and reveals any newer localStorage data after the tree is attached.
  */
 export function useStoreData(): { seed: Seed; store: Store } {
   const store = getStore();
   const seed = useSyncExternalStore(
     (onChange) => store.subscribe(onChange),
     () => store.getSeed(),
-    () => store.getSeed(),
+    () => serverSeedSnapshot,
   );
   return { seed, store };
 }
