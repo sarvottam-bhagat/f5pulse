@@ -31,6 +31,8 @@ export interface ClientView {
   activePlacements: Placement[];
   historicalPlacements: Placement[];
   feedbackHistory: FeedbackRecord[];
+  completedFeedbackHistory: FeedbackRecord[];
+  upcomingFeedback: FeedbackRecord[];
   communicationHistory: Communication[];
   openIssues: Issue[];
   isSilent: boolean;
@@ -59,6 +61,12 @@ export function buildClientView(seed: Seed, clientId: string, asOf: string): Cli
   const feedbackHistory = seed.feedback
     .filter((f) => placementIds.has(f.placementId) && f.subjectType === "client")
     .sort((a, b) => (a.scheduledFor < b.scheduledFor ? 1 : -1));
+  const completedFeedbackHistory = feedbackHistory
+    .filter((feedback) => Boolean(feedback.collectedAt))
+    .sort((left, right) => (left.collectedAt! < right.collectedAt! ? 1 : -1));
+  const upcomingFeedback = feedbackHistory
+    .filter((feedback) => !feedback.collectedAt && feedback.scheduledFor > asOf)
+    .sort((left, right) => left.scheduledFor.localeCompare(right.scheduledFor));
   const communicationHistory = seed.communications
     .filter((c) => placementIds.has(c.placementId) && c.subjectType === "client")
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
@@ -110,6 +118,8 @@ export function buildClientView(seed: Seed, clientId: string, asOf: string): Cli
     activePlacements,
     historicalPlacements,
     feedbackHistory,
+    completedFeedbackHistory,
+    upcomingFeedback,
     communicationHistory,
     openIssues,
     isSilent,

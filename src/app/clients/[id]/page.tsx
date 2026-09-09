@@ -140,14 +140,24 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         <summary className="cursor-pointer list-none font-semibold">
           <span className="flex items-center justify-between gap-3">
             <span>History and records</span>
-            <span className="text-xs font-normal text-text-muted">{view.feedbackHistory.length} feedback · {view.communicationHistory.length} communications</span>
+            <span className="text-xs font-normal text-text-muted">
+              {view.completedFeedbackHistory.length} recorded · {view.upcomingFeedback.length} upcoming · {view.communicationHistory.length} communications
+            </span>
           </span>
         </summary>
         <div className="mt-5 grid gap-6 border-t border-border pt-5 md:grid-cols-2">
           <section>
-            <h3 className="text-sm font-semibold">Recent client feedback</h3>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold">Recorded client feedback</h3>
+              <span className="text-xs text-text-muted">
+                Showing {Math.min(5, view.completedFeedbackHistory.length)} of {view.completedFeedbackHistory.length}
+              </span>
+            </div>
             <div className="mt-2 space-y-2">
-              {view.feedbackHistory.slice(0, 5).map((feedback) => (
+              {view.completedFeedbackHistory.length === 0 && (
+                <p className="rounded-2xl bg-white p-3 text-xs text-text-muted">No feedback recorded yet.</p>
+              )}
+              {view.completedFeedbackHistory.slice(0, 5).map((feedback) => (
                 <div key={feedback.id} className="rounded-2xl bg-white p-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-medium">{formatHuman(feedback.scheduledFor)}</span>
@@ -156,6 +166,30 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                   {feedback.summary && <p className="mt-1 text-xs text-text-muted">{feedback.summary}</p>}
                 </div>
               ))}
+              {view.completedFeedbackHistory.length > 5 && (
+                <details className="rounded-2xl border border-border bg-white p-3">
+                  <summary className="cursor-pointer text-xs font-medium text-accent">
+                    View remaining {view.completedFeedbackHistory.length - 5} feedback records
+                  </summary>
+                  <div className="mt-3 space-y-2">
+                    {view.completedFeedbackHistory.slice(5).map((feedback) => (
+                      <div key={feedback.id} className="rounded-xl bg-surface-secondary p-3 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="font-medium">{formatHuman(feedback.collectedAt ?? feedback.scheduledFor)}</span>
+                          <span className="text-xs capitalize text-text-muted">{feedback.sentiment ?? "Recorded"}</span>
+                        </div>
+                        {feedback.summary && <p className="mt-1 text-xs text-text-muted">{feedback.summary}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+              {view.upcomingFeedback.length > 0 && (
+                <div className="rounded-2xl border border-border px-3 py-3 text-xs">
+                  <p className="font-medium">Upcoming feedback checkpoints: {view.upcomingFeedback.length}</p>
+                  <p className="mt-1 text-text-muted">Next due {formatHuman(view.upcomingFeedback[0].scheduledFor)}</p>
+                </div>
+              )}
             </div>
           </section>
           <section>
