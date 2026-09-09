@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# F5 Pulse
 
-## Getting Started
+F5 Pulse helps one operations owner see which clients and placements need attention, understand why, and prepare the right follow-up. The contextual chat assistant is read-only: it can explain the attached client, professional, and placement data, but it cannot change records or contact anyone.
 
-First, run the development server:
+## Local setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Install dependencies:
+
+```powershell
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a local `.env.local` file (it is ignored by Git):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+OPENAI_MODEL=gpt-5.6-terra
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Use a Supabase publishable key, never a secret or service-role key. `OPENAI_API_KEY` is server-only and must not use a `NEXT_PUBLIC_` prefix.
 
-## Learn More
+In the linked Supabase project:
 
-To learn more about Next.js, take a look at the following resources:
+1. Enable anonymous sign-ins under Authentication settings.
+2. Apply the committed migration with `npx supabase db push --linked`.
+3. Run `npx supabase migration list --linked` and confirm the local and remote migration versions match.
+4. Run the database RLS tests and security advisors before deploying.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Start the app:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```powershell
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000). Chat creates a private anonymous Supabase identity automatically, so there is no login screen. In the composer, use `@` to attach a client and `/` to choose one of that client's active professionals.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Verification
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```powershell
+npm test
+npx eslint src/app/api/chat/route.ts src/app/chat/page.tsx src/components/chat src/domain/chat src/hooks src/lib/supabase src/services/chat
+npm run build
+```
+
+Chat sessions and messages are protected by row-level security. Each anonymous user can read and change only their own conversation history. OpenAI-side response storage is disabled because Supabase is the conversation system of record.
