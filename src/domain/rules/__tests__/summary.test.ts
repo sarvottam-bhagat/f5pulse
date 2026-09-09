@@ -14,10 +14,10 @@ describe("summary tiles", () => {
     expect(trialPlacementPredicate(pastTrial, TODAY)).toBe(false);
   });
 
-  it("counts saved and automatically detected mandatory escalations consistently", () => {
+  it("counts only placements that still need an escalation raised", () => {
     const withOpen = makeContext({
       placement: { id: "p1" },
-      escalations: [makeEscalation({ placementId: "p1", status: "open" })],
+      escalations: [makeEscalation({ placementId: "p1", status: "open", raisedBy: "Karan" })],
     });
     const withMandatoryTrigger = makeContext({
       placement: { id: "p2", trialEndDate: "2026-09-30" },
@@ -31,8 +31,8 @@ describe("summary tiles", () => {
     const tiles = buildSummaryTiles(contexts, TODAY);
     const escalationsTile = tiles.find((t) => t.key === "escalations")!;
     expect(escalationsTile.label).toBe("Escalate now");
-    expect(escalationsTile.count).toBe(2);
-    expect(filterByTile(contexts, "escalations", TODAY)).toEqual([withOpen, withMandatoryTrigger]);
+    expect(escalationsTile.count).toBe(1);
+    expect(filterByTile(contexts, "escalations", TODAY)).toEqual([withMandatoryTrigger]);
   });
 
   it("each tile acts as a filter returning a subset of contexts", () => {

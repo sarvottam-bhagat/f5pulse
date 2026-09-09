@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { ProposedAction } from "@/domain/chat";
 import { Button } from "@/components/ui/Button";
 import { useStore } from "@/store/useStore";
+import { addDays, getDemoToday } from "@/domain/dates";
+import { CURRENT_OPERATOR_NAME, SENIOR_MANAGER_NAME } from "@/domain/operators";
 
 function describeAction(action: ProposedAction): string {
   switch (action.kind) {
@@ -40,7 +42,7 @@ export function ProposedActionCard({ action }: { action: ProposedAction }) {
           channel: action.channel,
           direction: "outbound",
           summary: action.summary,
-          owner: "Operator",
+          owner: CURRENT_OPERATOR_NAME,
         });
         break;
       case "record_feedback":
@@ -68,7 +70,7 @@ export function ProposedActionCard({ action }: { action: ProposedAction }) {
           channel: "email",
           direction: "outbound",
           summary: action.description,
-          owner: "Operator",
+          owner: CURRENT_OPERATOR_NAME,
           nextFollowUpDate: action.dueDate,
         });
         break;
@@ -80,6 +82,9 @@ export function ProposedActionCard({ action }: { action: ProposedAction }) {
           placementId: action.placementId,
           reason: "cancellation_or_replacement_mentioned",
           summary: action.summary,
+          raisedBy: CURRENT_OPERATOR_NAME,
+          escalatedTo: SENIOR_MANAGER_NAME,
+          nextFollowUpDate: addDays(getDemoToday(), 1),
         });
         break;
       case "start_replacement_review":
@@ -87,6 +92,9 @@ export function ProposedActionCard({ action }: { action: ProposedAction }) {
           placementId: action.placementId,
           reason: "cancellation_or_replacement_mentioned",
           summary: `Replacement review requested: ${action.summary}`,
+          raisedBy: CURRENT_OPERATOR_NAME,
+          escalatedTo: SENIOR_MANAGER_NAME,
+          nextFollowUpDate: addDays(getDemoToday(), 1),
         });
         break;
     }

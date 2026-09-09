@@ -34,10 +34,15 @@ export function contactsDueTodayPredicate(ctx: PlacementContext, asOf: string): 
 }
 
 export function escalationsPredicate(ctx: PlacementContext, asOf: string): boolean {
-  return (
-    ctx.escalations.some((e) => e.status !== "resolved") ||
-    detectMandatoryEscalations(ctx, asOf).length > 0
+  const hasRecordedEscalation = ctx.escalations.some(
+    (escalation) => escalation.status !== "resolved" && Boolean(escalation.raisedBy),
   );
+  if (hasRecordedEscalation) return false;
+
+  const pendingEscalation = ctx.escalations.some(
+    (escalation) => escalation.status !== "resolved" && !escalation.raisedBy,
+  );
+  return pendingEscalation || detectMandatoryEscalations(ctx, asOf).length > 0;
 }
 
 export function trialPlacementPredicate(ctx: PlacementContext, asOf: string): boolean {

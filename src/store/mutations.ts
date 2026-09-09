@@ -4,6 +4,7 @@
 
 import type { Seed, Client, Professional, Placement, Issue, AuditEntry } from "../domain/types";
 import { nextId } from "./id";
+import { CURRENT_OPERATOR_NAME, SENIOR_MANAGER_NAME } from "../domain/operators";
 import { generateInitialCheckpoints } from "../domain/rules/checkpoints";
 import {
   canTransition,
@@ -253,6 +254,8 @@ export function logOutcome(seed: Seed, input: LogOutcomeInput, now: string): Sto
           reason: "cancellation_or_replacement_mentioned",
           status: "open",
           summary: input.summary,
+          raisedBy: input.owner,
+          escalatedTo: SENIOR_MANAGER_NAME,
           raisedAt: now,
           createdAt: now,
         },
@@ -445,6 +448,8 @@ export function completeFollowup(seed: Seed, input: CompleteFollowupInput): Stor
 export function createEscalation(seed: Seed, input: CreateEscalationInput, now: string): StoreResult<Seed> {
   const placement = seed.placements.find((p) => p.id === input.placementId);
   if (!placement) return { ok: false, error: "Placement not found." };
+  const raisedBy = input.raisedBy ?? CURRENT_OPERATOR_NAME;
+  const escalatedTo = input.escalatedTo ?? SENIOR_MANAGER_NAME;
   const escalation = {
     id: nextId("escalation"),
     placementId: input.placementId,
@@ -452,11 +457,29 @@ export function createEscalation(seed: Seed, input: CreateEscalationInput, now: 
     status: "open" as const,
     relatedIssueId: input.relatedIssueId,
     summary: input.summary,
-    escalatedTo: input.escalatedTo,
+    raisedBy,
+    escalatedTo,
     raisedAt: now,
     createdAt: now,
   };
-  let next = { ...seed, escalations: [...seed.escalations, escalation] };
-  next = audit(next, input.placementId, "escalation_created", input.summary, "operator", now);
+  let next: Seed = { ...seed, escalations: [...seed.escalations, escalation] };
+  if (input.nextFollowUpDate) {
+    next = {
+      ...next,
+      followups: [
+        ...next.followups,
+        {
+          id: nextId("followup"),
+          placementId: input.placementId,
+          relatedIssueId: input.relatedIssueId,
+          dueDate: input.nextFollowUpDate,
+          description: `Follow up with ${escalatedTo} on escalation`,
+          owner: raisedBy,
+          createdAt: now,
+        },
+      ],
+    };
+  }
+  next = audit(next, input.placementId, "escalation_created", input.summary, raisedBy, now);
   return { ok: true, value: next };
 }

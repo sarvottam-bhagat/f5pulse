@@ -9,7 +9,7 @@ import { assessHealth } from "./health";
 import { assessSilence } from "./silence";
 import { detectMandatoryEscalations } from "./escalation";
 import { dueFollowupWindows } from "./issueLifecycle";
-import type { HealthState } from "../types";
+import type { EscalationReason, HealthState } from "../types";
 
 export type PrioritySection = "escalate_now" | "contact_today" | "confirm_fix_held" | "next_three_days";
 export type RiskLevel = "critical" | "high" | "medium" | "low";
@@ -39,6 +39,8 @@ export interface PriorityCard {
   /** Set when recommendedAction is "confirm_fix": identifies the issue and window to confirm. */
   issueId?: string;
   windowId?: string;
+  /** Exact rule that put this placement in the escalation queue. */
+  escalationReason?: EscalationReason;
 }
 
 function riskFromHealth(state: HealthState): RiskLevel {
@@ -62,13 +64,22 @@ export function buildPriorityQueue(contexts: PlacementContext[], asOf: string): 
     const health = assessHealth(ctx, asOf);
     const silence = assessSilence(ctx, asOf);
     const mandatoryTriggers = detectMandatoryEscalations(ctx, asOf);
-    const openEscalations = ctx.escalations.filter((e) => e.status !== "resolved");
+    const recordedEscalations = ctx.escalations.filter(
+      (escalation) => escalation.status !== "resolved" && Boolean(escalation.raisedBy),
+    );
+    const pendingEscalations = ctx.escalations.filter(
+      (escalation) => escalation.status !== "resolved" && !escalation.raisedBy,
+    );
 
-    // --- Escalate now: open escalations + freshly-detected mandatory triggers ---
-    if (openEscalations.length > 0 || mandatoryTriggers.length > 0) {
+    // Once raised, the escalation is tracked in history and no longer asks the
+    // operator to raise the same placement again.
+    if (recordedEscalations.length > 0) continue;
+
+    // --- Escalate now: freshly-detected mandatory triggers ---
+    if (pendingEscalations.length > 0 || mandatoryTriggers.length > 0) {
       const evidence = [
-        ...openEscalations.map((e) => e.summary),
-        ...mandatoryTriggers.map((t) => t.detail),
+        ...pendingEscalations.map((escalation) => escalation.summary),
+        ...mandatoryTriggers.map((trigger) => trigger.detail),
       ];
       cards.push({
         id: `${ctx.placement.id}_escalate`,
@@ -84,6 +95,7 @@ export function buildPriorityQueue(contexts: PlacementContext[], asOf: string): 
         recommendedAction: "escalate",
         whyHere: "This placement meets one or more mandatory-escalation conditions and needs senior attention now.",
         healthState: health.state,
+        escalationReason: pendingEscalations[0]?.reason ?? mandatoryTriggers[0].reason,
       });
       continue; // an escalating placement doesn't also compete for other buckets today
     }

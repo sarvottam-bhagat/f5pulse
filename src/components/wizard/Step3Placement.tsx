@@ -6,6 +6,7 @@ import { TextField, SelectField, TextAreaField } from "@/components/ui/FormField
 import type { NewPlacementInput } from "@/store/types";
 import { addDays, getDemoToday } from "@/domain/dates";
 import { TRIAL_LENGTH_DAYS } from "@/domain/cadence";
+import { CURRENT_OPERATOR_NAME } from "@/domain/operators";
 
 export function Step3Placement({
   clientLabel,
@@ -32,7 +33,7 @@ export function Step3Placement({
       roleTitle: roleTitleDefault,
       startDate: today,
       trialEndDate: addDays(today, TRIAL_LENGTH_DAYS),
-      f5Owner: "",
+      f5Owner: CURRENT_OPERATOR_NAME,
       expectedSchedule: "",
       initialNotes: "",
       status: "Active",

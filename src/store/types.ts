@@ -140,5 +140,7 @@ export interface CreateEscalationInput {
   reason: EscalationReason;
   summary: string;
   relatedIssueId?: string;
+  raisedBy?: string;
   escalatedTo?: string;
+  nextFollowUpDate?: string;
 }

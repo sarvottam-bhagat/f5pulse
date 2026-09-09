@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 describe("workflow: recurring-issue escalation via the store", () => {
-  it("implementing a fix, then confirming a window as recurred, surfaces an escalation on the dashboard", () => {
+  it("surfaces a recurred fix so the operator can raise the escalation", () => {
     const store = new Store();
     const seed = store.getSeed();
     const activePlacement = seed.placements.find((p) => p.status === "Active" && !p.archived)!;
@@ -52,7 +52,7 @@ describe("workflow: recurring-issue escalation via the store", () => {
       true,
     );
 
-    // Dashboard should now surface this placement in escalate_now.
+    // The system detected the escalation, but the operator still needs to raise it.
     const contexts = buildAllPlacementContexts(seedAfter);
     const cards = buildPriorityQueue(contexts, today);
     const grouped = groupBySection(cards);
@@ -61,7 +61,7 @@ describe("workflow: recurring-issue escalation via the store", () => {
 });
 
 describe("workflow: log outcome with escalate toggle raises an escalation immediately", () => {
-  it("creates an open escalation visible on the dashboard right after logOutcome", () => {
+  it("creates an open escalation and removes the completed raise action from the dashboard", () => {
     const store = new Store();
     const seed = store.getSeed();
     const activePlacement = seed.placements.find((p) => p.status === "Active" && !p.archived)!;
@@ -85,6 +85,6 @@ describe("workflow: log outcome with escalate toggle raises an escalation immedi
     const contexts = buildAllPlacementContexts(seedAfter);
     const cards = buildPriorityQueue(contexts, today);
     const grouped = groupBySection(cards);
-    expect(grouped.escalate_now.some((c) => c.placementId === activePlacement.id)).toBe(true);
+    expect(grouped.escalate_now.some((c) => c.placementId === activePlacement.id)).toBe(false);
   });
 });

@@ -227,6 +227,7 @@ export interface Escalation {
   raisedAt: string;
   acknowledgedAt?: string;
   resolvedAt?: string;
+  raisedBy?: string;
   escalatedTo?: string;
   createdAt: string;
 }

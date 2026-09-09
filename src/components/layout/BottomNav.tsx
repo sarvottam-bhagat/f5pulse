@@ -51,10 +51,10 @@ export function BottomNav() {
         </ul>
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-secondary text-[11px] font-semibold tracking-[-0.02em] text-text-secondary"
-          title="F5 operations"
-          aria-label="F5 operations"
+          title="Karan, current user"
+          aria-label="Karan, current user"
         >
-          F5
+          K
         </div>
       </div>
     </nav>

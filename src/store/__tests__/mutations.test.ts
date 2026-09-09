@@ -188,7 +188,7 @@ describe("updateIssueStatus", () => {
 });
 
 describe("createEscalation", () => {
-  it("creates an open escalation tied to the placement", () => {
+  it("records who raised and received the escalation and schedules its follow-up", () => {
     const seed = seedWithPlacement();
     const result = createEscalation(
       seed,
@@ -196,6 +196,9 @@ describe("createEscalation", () => {
         placementId: "placement_1",
         reason: "cancellation_or_replacement_mentioned",
         summary: "Client asked about ending the engagement.",
+        raisedBy: "Karan",
+        escalatedTo: "Ankita",
+        nextFollowUpDate: "2026-09-09",
       },
       NOW,
     );
@@ -203,5 +206,15 @@ describe("createEscalation", () => {
     if (!result.ok) return;
     expect(result.value.escalations).toHaveLength(1);
     expect(result.value.escalations[0].status).toBe("open");
+    expect(result.value.escalations[0].raisedBy).toBe("Karan");
+    expect(result.value.escalations[0].escalatedTo).toBe("Ankita");
+    expect(result.value.followups).toContainEqual(
+      expect.objectContaining({
+        placementId: "placement_1",
+        dueDate: "2026-09-09",
+        description: "Follow up with Ankita on escalation",
+        owner: "Karan",
+      }),
+    );
   });
 });

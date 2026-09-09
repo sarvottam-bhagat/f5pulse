@@ -10,15 +10,25 @@ import {
 } from "./fixtures";
 
 describe("buildPriorityQueue — ordering and bucketing", () => {
-  it("places an open escalation in escalate_now and nowhere else for that placement", () => {
+  it("does not return an already-raised escalation to escalate_now", () => {
     const ctx = makeContext({
-      escalations: [makeEscalation({ status: "open" })],
-      feedback: [makeFeedback({ scheduledFor: "2026-09-01", attemptCount: 2 })], // would also be contact_today
+      escalations: [makeEscalation({ status: "open", raisedBy: "Karan" })],
     });
     const cards = buildPriorityQueue([ctx], TODAY);
     const sections = new Set(cards.map((c) => c.section));
-    expect(sections.has("escalate_now")).toBe(true);
-    expect(sections.has("contact_today")).toBe(false);
+    expect(sections.has("escalate_now")).toBe(false);
+  });
+
+  it("carries the detected escalation reason into its action card", () => {
+    const ctx = makeContext({
+      issues: [makeIssue({ title: "Security incident", description: "Confidential data exposed" })],
+    });
+    const cards = buildPriorityQueue([ctx], TODAY);
+    const escalation = cards.find((card) => card.section === "escalate_now");
+
+    expect(escalation?.escalationReason).toBe(
+      "security_confidentiality_harassment_compliance_payroll_safety",
+    );
   });
 
   it("places a due follow-up confirmation window in confirm_fix_held", () => {

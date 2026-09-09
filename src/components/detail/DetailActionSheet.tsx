@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { TextField, TextAreaField, SelectField } from "@/components/ui/FormField";
 import { useStore } from "@/store/useStore";
 import type { Sentiment, FeedbackSubjectType, IssueSeverity, EscalationReason, CommunicationChannel } from "@/domain/types";
+import { addDays, getDemoToday } from "@/domain/dates";
+import { CURRENT_OPERATOR_NAME, SENIOR_MANAGER_NAME } from "@/domain/operators";
 
 export type DetailAction =
   | { kind: "record_feedback"; placementId: string; subjectType: FeedbackSubjectType }
@@ -34,7 +36,7 @@ export function DetailActionSheet({ action, onClose }: { action: DetailAction | 
   const store = useStore();
   const [summary, setSummary] = useState("");
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
-  const [owner, setOwner] = useState("Jamie Ortiz");
+  const [owner, setOwner] = useState(CURRENT_OPERATOR_NAME);
   const [dueDate, setDueDate] = useState("");
   const [channel, setChannel] = useState<CommunicationChannel>("email");
   const [severity, setSeverity] = useState<IssueSeverity>("medium");
@@ -137,7 +139,14 @@ export function DetailActionSheet({ action, onClose }: { action: DetailAction | 
         if (!requireSummary()) return;
         const reason: EscalationReason =
           action.subjectType === "client" ? "cancellation_or_replacement_mentioned" : "full_shift_absence_no_contact";
-        const res = store.createEscalation({ placementId: action.placementId, reason, summary: summary.trim() });
+        const res = store.createEscalation({
+          placementId: action.placementId,
+          reason,
+          summary: summary.trim(),
+          raisedBy: CURRENT_OPERATOR_NAME,
+          escalatedTo: SENIOR_MANAGER_NAME,
+          nextFollowUpDate: addDays(getDemoToday(), 1),
+        });
         if (!res.ok) return setError(res.error);
         break;
       }

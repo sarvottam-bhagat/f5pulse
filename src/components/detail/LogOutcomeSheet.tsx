@@ -5,6 +5,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { TextField, TextAreaField } from "@/components/ui/FormField";
 import { useStore } from "@/store/useStore";
+import { CURRENT_OPERATOR_NAME } from "@/domain/operators";
 import type { Sentiment, FeedbackSubjectType } from "@/domain/types";
 
 export function LogOutcomeSheet({
@@ -22,7 +23,7 @@ export function LogOutcomeSheet({
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
   const [summary, setSummary] = useState("");
   const [commitment, setCommitment] = useState("");
-  const [owner, setOwner] = useState("Jamie Ortiz");
+  const [owner, setOwner] = useState(CURRENT_OPERATOR_NAME);
   const [nextFollowUpDate, setNextFollowUpDate] = useState("");
   const [createIssueToggle, setCreateIssueToggle] = useState(false);
   const [escalateToggle, setEscalateToggle] = useState(false);

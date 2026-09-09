@@ -141,7 +141,7 @@ export function buildPlacementTimeline(ctx: PlacementContext): TimelineEvent[] {
       type: "escalation",
       at: e.raisedAt,
       title: "Escalation raised",
-      detail: e.summary,
+      detail: `${e.raisedBy && e.escalatedTo ? `Raised by ${e.raisedBy} to ${e.escalatedTo}. ` : ""}${e.summary}`,
       tone: "critical",
     });
   }

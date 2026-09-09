@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import type { PriorityCard } from "@/domain/rules";
 import { useStore } from "@/store/useStore";
 import type { Sentiment } from "@/domain/types";
+import { addDays, getDemoToday } from "@/domain/dates";
+import { CURRENT_OPERATOR_NAME, SENIOR_MANAGER_NAME } from "@/domain/operators";
 
 /**
  * A single action sheet that adapts its fields based on the card's
@@ -24,8 +26,9 @@ export function ActionSheet({
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
   const [summary, setSummary] = useState("");
   const [commitment, setCommitment] = useState("");
-  const [owner, setOwner] = useState("Jamie Ortiz");
+  const [owner, setOwner] = useState(CURRENT_OPERATOR_NAME);
   const [nextFollowUpDate, setNextFollowUpDate] = useState("");
+  const [escalationFollowUpDate, setEscalationFollowUpDate] = useState(addDays(getDemoToday(), 1));
   const [createIssueToggle, setCreateIssueToggle] = useState(false);
   const [escalateToggle, setEscalateToggle] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export function ActionSheet({
     setSummary("");
     setCommitment("");
     setNextFollowUpDate("");
+    setEscalationFollowUpDate(addDays(getDemoToday(), 1));
     setCreateIssueToggle(false);
     setEscalateToggle(false);
     setError(null);
@@ -103,8 +107,11 @@ export function ActionSheet({
     }
     const result = store.createEscalation({
       placementId: card.placementId,
-      reason: "cancellation_or_replacement_mentioned",
+      reason: card.escalationReason ?? "cancellation_or_replacement_mentioned",
       summary: summary.trim(),
+      raisedBy: CURRENT_OPERATOR_NAME,
+      escalatedTo: SENIOR_MANAGER_NAME,
+      nextFollowUpDate: escalationFollowUpDate,
     });
     if (!result.ok) {
       setError(result.error);
@@ -270,14 +277,41 @@ export function ActionSheet({
           </div>
         )}
 
-        <div>
-          <label className="text-xs font-medium text-foreground/70">Owner</label>
-          <input
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-border p-2 text-sm"
-          />
-        </div>
+        {card.recommendedAction === "escalate" ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-surface-secondary p-3">
+                <p className="text-xs text-foreground/55">Raised by</p>
+                <p className="mt-1 text-sm font-medium">{CURRENT_OPERATOR_NAME}</p>
+              </div>
+              <div className="rounded-lg bg-surface-secondary p-3">
+                <p className="text-xs text-foreground/55">Escalate to</p>
+                <p className="mt-1 text-sm font-medium">{SENIOR_MANAGER_NAME}</p>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-foreground/70">Follow up on</label>
+              <input
+                type="date"
+                value={escalationFollowUpDate}
+                onChange={(e) => setEscalationFollowUpDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border p-2 text-sm"
+              />
+            </div>
+            <p className="text-xs text-foreground/55">
+              This records the escalation in F5 Pulse. No external email is sent yet.
+            </p>
+          </>
+        ) : (
+          <div>
+            <label className="text-xs font-medium text-foreground/70">Owner</label>
+            <input
+              value={owner}
+              onChange={(e) => setOwner(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-border p-2 text-sm"
+            />
+          </div>
+        )}
 
         {(card.recommendedAction === "log_outcome" || card.recommendedAction === "schedule_followup") && (
           <div>
@@ -322,7 +356,7 @@ export function ActionSheet({
               else handleClose();
             }}
           >
-            Save
+            {card.recommendedAction === "escalate" ? "Record escalation" : "Save"}
           </Button>
         </div>
       </div>

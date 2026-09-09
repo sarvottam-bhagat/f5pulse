@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
+import { ActionSheet } from "@/components/dashboard/ActionSheet";
 import { InsightsSection } from "@/components/dashboard/InsightsSection";
 import { PriorityCardView } from "@/components/dashboard/PriorityCardView";
 import type { SummaryTile } from "@/domain/rules";
@@ -33,8 +34,37 @@ describe("dashboard presentation", () => {
 
     expect(html).toContain('aria-label="Primary navigation"');
     expect(html).toContain("fixed top-4");
+    expect(html).toContain('aria-label="Karan, current user"');
+    expect(html).toContain(">K<");
     expect(html).not.toContain("🏠");
     expect(html).not.toContain("💬");
+  });
+
+  it("shows who raises and receives an escalation", () => {
+    const escalationCard: PriorityCard = {
+      id: "escalation-1",
+      section: "escalate_now",
+      placementId: "placement-1",
+      clientName: "Harborview",
+      professionalName: "Priya Shah",
+      contactWho: "client",
+      reason: "Client silence is at risk",
+      riskLevel: "critical",
+      evidence: ["Two unanswered attempts"],
+      dueAt: "2026-09-08",
+      recommendedAction: "escalate",
+      whyHere: "Senior attention is required.",
+      healthState: "Critical",
+      escalationReason: "trial_feedback_red",
+    };
+    const html = renderToStaticMarkup(
+      createElement(ActionSheet, { card: escalationCard, onClose: () => undefined }),
+    );
+
+    expect(html).toContain("Raised by");
+    expect(html).toContain("Karan");
+    expect(html).toContain("Escalate to");
+    expect(html).toContain("Ankita");
   });
 
   it("separates the three primary metrics from the three supporting signals", () => {
