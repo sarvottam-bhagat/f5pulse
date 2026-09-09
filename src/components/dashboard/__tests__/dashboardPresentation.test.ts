@@ -41,11 +41,17 @@ describe("dashboard presentation", () => {
     const html = renderToStaticMarkup(
       createElement(SummaryTiles, {
         tiles,
+        portfolioTotals: { clients: 13, professionals: 40 },
         activeFilter: null,
         onToggleFilter: () => undefined,
       }),
     );
 
+    expect(html).toContain('aria-label="Portfolio totals"');
+    expect(html).toContain("Total clients");
+    expect(html).toContain("Total professionals");
+    expect(html).toContain(">13<");
+    expect(html).toContain(">40<");
     expect(html).toContain('aria-label="Primary metrics"');
     expect(html).toContain('aria-label="Status signals"');
     expect((html.match(/<button/g) ?? []).length).toBe(6);

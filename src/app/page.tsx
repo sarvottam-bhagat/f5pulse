@@ -103,6 +103,10 @@ export default function HomePage() {
 
       <SummaryTiles
         tiles={tiles}
+        portfolioTotals={{
+          clients: seed.clients.filter((client) => !client.archived).length,
+          professionals: seed.professionals.filter((professional) => !professional.archived).length,
+        }}
         activeFilter={activeFilter}
         onToggleFilter={(key) => setActiveFilter((current) => (current === key ? null : key))}
       />

@@ -13,10 +13,12 @@ const TILE_COLORS: Record<SummaryTileKey, string> = {
 
 export function SummaryTiles({
   tiles,
+  portfolioTotals,
   activeFilter,
   onToggleFilter,
 }: {
   tiles: SummaryTile[];
+  portfolioTotals: { clients: number; professionals: number };
   activeFilter: SummaryTileKey | null;
   onToggleFilter: (key: SummaryTileKey) => void;
 }) {
@@ -51,6 +53,20 @@ export function SummaryTiles({
 
   return (
     <div className="space-y-4">
+      <div aria-label="Portfolio totals" className="grid grid-cols-2 gap-2 sm:gap-4">
+        <div className="flex items-center justify-between rounded-[20px] bg-surface-secondary px-4 py-4 sm:rounded-[24px] sm:px-6">
+          <span className="text-xs font-medium text-text-secondary sm:text-sm">Total clients</span>
+          <span className="text-xl font-semibold tracking-[-0.035em] tabular-nums sm:text-2xl">
+            {portfolioTotals.clients}
+          </span>
+        </div>
+        <div className="flex items-center justify-between rounded-[20px] bg-surface-secondary px-4 py-4 sm:rounded-[24px] sm:px-6">
+          <span className="text-xs font-medium text-text-secondary sm:text-sm">Total professionals</span>
+          <span className="text-xl font-semibold tracking-[-0.035em] tabular-nums sm:text-2xl">
+            {portfolioTotals.professionals}
+          </span>
+        </div>
+      </div>
       <div aria-label="Primary metrics" className="grid grid-cols-3 gap-2 sm:gap-4">
         {primary.map((tile) => tileButton(tile))}
       </div>
