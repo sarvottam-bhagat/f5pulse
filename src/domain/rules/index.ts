@@ -9,3 +9,4 @@ export * from "./clientView";
 export * from "./professionalView";
 export * from "./timeline";
 export * from "./clientDirectory";
+export * from "./workflowQueues";

@@ -7,12 +7,15 @@ import { InsightsSection } from "@/components/dashboard/InsightsSection";
 import { OperationsWorkspace } from "@/components/dashboard/OperationsWorkspace";
 import { PlacementHealthCard } from "@/components/dashboard/PlacementHealthCard";
 import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
+import { WorkflowClosureSection } from "@/components/dashboard/WorkflowClosureSection";
 import { MalformedRecordBanner, StorageFailureBanner } from "@/components/ui/Banner";
-import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   buildAllPlacementContexts,
   buildDashboardLanes,
   buildHealthDistribution,
+  buildEscalationTracker,
+  buildFollowupQueue,
   buildPriorityQueue,
   buildSummaryTiles,
   filterByTile,
@@ -41,9 +44,27 @@ export default function HomePage() {
   const cards = useMemo(() => buildPriorityQueue(filteredContexts, today), [filteredContexts, today]);
   const lanes = useMemo(() => buildDashboardLanes(cards), [cards]);
   const healthDistribution = useMemo(() => buildHealthDistribution(contexts, today), [contexts, today]);
+  const followupQueue = useMemo(() => buildFollowupQueue(contexts, today), [contexts, today]);
+  const escalationTracker = useMemo(() => buildEscalationTracker(contexts), [contexts]);
 
   if (contexts.length === 0) {
-    return <DashboardSkeleton />;
+    return (
+      <main className="pb-8">
+        <EmptyState
+          icon="👋"
+          title="No active placements yet"
+          description="Add your first placement to start monitoring client happiness and professional performance."
+          action={(
+            <Link
+              href="/placements/new"
+              className="tap-target inline-flex items-center rounded-full bg-[#0071e3] px-5 text-sm font-medium text-white"
+            >
+              Add Placement
+            </Link>
+          )}
+        />
+      </main>
+    );
   }
 
   function resetDemoData() {
@@ -124,6 +145,23 @@ export default function HomePage() {
         attention={lanes.attention}
         upcoming={lanes.upcoming}
         onPrimaryAction={setActiveCard}
+      />
+
+      <WorkflowClosureSection
+        followups={followupQueue}
+        escalations={escalationTracker}
+        onCompleteFollowup={(followupId, outcome) => {
+          const result = store.completeFollowup({
+            followupId,
+            outcome,
+            completedAt: new Date().toISOString(),
+          });
+          return result.ok ? { ok: true } : result;
+        }}
+        onUpdateEscalation={(escalationId, status) => {
+          const result = store.updateEscalationStatus(escalationId, status);
+          return result.ok ? { ok: true } : result;
+        }}
       />
 
       <section aria-labelledby="overview-title">

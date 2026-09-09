@@ -2,12 +2,15 @@ import { describe, it, expect } from "vitest";
 import {
   archivePlacement,
   logCommunication,
+  logOutcome,
   recordFeedback,
   createIssue,
   updateIssueStatus,
   implementFix,
   confirmIssueFollowupWindow,
   createEscalation,
+  completeFollowup,
+  updateEscalationStatus,
 } from "../mutations";
 import { seedWithClientAndProfessional } from "./fixtures";
 import type { Placement } from "../../domain/types";
@@ -64,6 +67,99 @@ describe("logCommunication", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.communications).toHaveLength(1);
+  });
+});
+
+describe("logOutcome", () => {
+  it("marks the earliest due matching check-in completed when contact is reached", () => {
+    const seed = {
+      ...seedWithPlacement(),
+      checkins: [
+        {
+          id: "checkin_later",
+          placementId: "placement_1",
+          subjectType: "professional" as const,
+          dueDate: "2026-09-08",
+          status: "scheduled" as const,
+          isTrialCheckpoint: false,
+          dayOffset: 60,
+          createdAt: "2026-08-01",
+        },
+        {
+          id: "checkin_due",
+          placementId: "placement_1",
+          subjectType: "professional" as const,
+          dueDate: "2026-09-01",
+          status: "scheduled" as const,
+          isTrialCheckpoint: false,
+          dayOffset: 30,
+          createdAt: "2026-08-01",
+        },
+      ],
+    };
+
+    const result = logOutcome(
+      seed,
+      {
+        placementId: "placement_1",
+        subjectType: "professional",
+        outcome: "reached",
+        sentiment: "positive",
+        summary: "Monthly check-in completed; no concerns.",
+        owner: "Karan",
+        createIssue: false,
+        escalate: false,
+      },
+      NOW,
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.checkins.find((checkin) => checkin.id === "checkin_due")).toEqual(
+      expect.objectContaining({
+        status: "completed",
+        completedAt: NOW,
+        notes: "Monthly check-in completed; no concerns.",
+      }),
+    );
+    expect(result.value.checkins.find((checkin) => checkin.id === "checkin_later")?.status).toBe("scheduled");
+  });
+
+  it("keeps the due check-in open when there is no answer", () => {
+    const seed = {
+      ...seedWithPlacement(),
+      checkins: [
+        {
+          id: "checkin_due",
+          placementId: "placement_1",
+          subjectType: "client" as const,
+          dueDate: "2026-09-01",
+          status: "scheduled" as const,
+          isTrialCheckpoint: false,
+          dayOffset: 30,
+          createdAt: "2026-08-01",
+        },
+      ],
+    };
+
+    const result = logOutcome(
+      seed,
+      {
+        placementId: "placement_1",
+        subjectType: "client",
+        outcome: "no_answer",
+        summary: "Left a voicemail.",
+        owner: "Karan",
+        createIssue: false,
+        escalate: false,
+      },
+      NOW,
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.checkins[0].status).toBe("scheduled");
+    expect(result.value.checkins[0].completedAt).toBeUndefined();
   });
 });
 
@@ -215,6 +311,100 @@ describe("createEscalation", () => {
         description: "Follow up with Ankita on escalation",
         owner: "Karan",
       }),
+    );
+  });
+
+  it("moves an escalation through acknowledged and resolved while retaining it", () => {
+    const seed = seedWithPlacement();
+    const created = createEscalation(
+      seed,
+      {
+        placementId: "placement_1",
+        reason: "full_shift_absence_no_contact",
+        summary: "No-call, no-show needs senior review.",
+        raisedBy: "Karan",
+        escalatedTo: "Ankita",
+      },
+      NOW,
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const escalationId = created.value.escalations[0].id;
+
+    const acknowledged = updateEscalationStatus(
+      created.value,
+      escalationId,
+      "acknowledged",
+      "2026-09-08T13:00:00.000Z",
+    );
+    expect(acknowledged.ok).toBe(true);
+    if (!acknowledged.ok) return;
+    expect(acknowledged.value.escalations[0]).toEqual(
+      expect.objectContaining({ status: "acknowledged", acknowledgedAt: "2026-09-08T13:00:00.000Z" }),
+    );
+
+    const resolved = updateEscalationStatus(
+      acknowledged.value,
+      escalationId,
+      "resolved",
+      "2026-09-08T14:00:00.000Z",
+    );
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
+    expect(resolved.value.escalations).toHaveLength(1);
+    expect(resolved.value.escalations[0]).toEqual(
+      expect.objectContaining({ status: "resolved", resolvedAt: "2026-09-08T14:00:00.000Z" }),
+    );
+  });
+
+  it("does not resolve an escalation before it is acknowledged", () => {
+    const seed = seedWithPlacement();
+    const created = createEscalation(
+      seed,
+      {
+        placementId: "placement_1",
+        reason: "full_shift_absence_no_contact",
+        summary: "No-call, no-show needs senior review.",
+        raisedBy: "Karan",
+        escalatedTo: "Ankita",
+      },
+      NOW,
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const result = updateEscalationStatus(created.value, created.value.escalations[0].id, "resolved", NOW);
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("completeFollowup", () => {
+  it("retains the follow-up and records its completion outcome", () => {
+    const seed = {
+      ...seedWithPlacement(),
+      followups: [
+        {
+          id: "followup_1",
+          placementId: "placement_1",
+          dueDate: "2026-09-08",
+          description: "Follow up with Ankita on escalation",
+          owner: "Karan",
+          createdAt: "2026-09-07T12:00:00.000Z",
+        },
+      ],
+    };
+
+    const result = completeFollowup(seed, {
+      followupId: "followup_1",
+      outcome: "Ankita confirmed the next steps.",
+      completedAt: NOW,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.followups).toHaveLength(1);
+    expect(result.value.followups[0]).toEqual(
+      expect.objectContaining({ completedAt: NOW, outcome: "Ankita confirmed the next steps." }),
     );
   });
 });

@@ -23,7 +23,7 @@ import type {
   CompleteFollowupInput,
   CreateEscalationInput,
 } from "./types";
-import type { Client, Professional, Issue } from "../domain/types";
+import type { Client, Professional, Issue, EscalationStatus } from "../domain/types";
 
 export type StoreMode = "persistent" | "temporary";
 
@@ -193,6 +193,13 @@ export class Store {
 
   createEscalation(input: CreateEscalationInput): StoreResult<null> {
     const result = mutations.createEscalation(this.seed, input, this.now());
+    if (!result.ok) return result;
+    this.applySeed(result.value);
+    return { ok: true, value: null };
+  }
+
+  updateEscalationStatus(escalationId: string, status: EscalationStatus): StoreResult<null> {
+    const result = mutations.updateEscalationStatus(this.seed, escalationId, status, this.now());
     if (!result.ok) return result;
     this.applySeed(result.value);
     return { ok: true, value: null };

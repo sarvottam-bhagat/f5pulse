@@ -2,7 +2,7 @@
 // localStorage — fully unit-testable. The StorageStore wrapper (store.ts)
 // is the only thing that persists the returned seed.
 
-import type { Seed, Client, Professional, Placement, Issue, AuditEntry } from "../domain/types";
+import type { Seed, Client, Professional, Placement, Issue, AuditEntry, EscalationStatus } from "../domain/types";
 import { nextId } from "./id";
 import { CURRENT_OPERATOR_NAME, SENIOR_MANAGER_NAME } from "../domain/operators";
 import { generateInitialCheckpoints } from "../domain/rules/checkpoints";
@@ -204,7 +204,33 @@ export function logOutcome(seed: Seed, input: LogOutcomeInput, now: string): Sto
     nextFollowUpDate: input.nextFollowUpDate,
     createdAt: now,
   };
-  let next: Seed = { ...seed, communications: [...seed.communications, communication] };
+  let checkins = seed.checkins;
+  if (input.outcome === "reached") {
+    const dueCheckin = seed.checkins
+      .filter(
+        (checkin) =>
+          checkin.placementId === input.placementId &&
+          checkin.subjectType === input.subjectType &&
+          checkin.status !== "completed" &&
+          checkin.status !== "skipped" &&
+          checkin.dueDate <= now.slice(0, 10),
+      )
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+
+    if (dueCheckin) {
+      checkins = seed.checkins.map((checkin) =>
+        checkin.id === dueCheckin.id
+          ? { ...checkin, status: "completed" as const, completedAt: now, notes: input.summary }
+          : checkin,
+      );
+    }
+  }
+
+  let next: Seed = {
+    ...seed,
+    checkins,
+    communications: [...seed.communications, communication],
+  };
 
   if (input.nextFollowUpDate) {
     next = {
@@ -481,5 +507,40 @@ export function createEscalation(seed: Seed, input: CreateEscalationInput, now: 
     };
   }
   next = audit(next, input.placementId, "escalation_created", input.summary, raisedBy, now);
+  return { ok: true, value: next };
+}
+
+export function updateEscalationStatus(
+  seed: Seed,
+  escalationId: string,
+  status: EscalationStatus,
+  now: string,
+): StoreResult<Seed> {
+  const idx = seed.escalations.findIndex((escalation) => escalation.id === escalationId);
+  if (idx === -1) return { ok: false, error: "Escalation not found." };
+
+  const current = seed.escalations[idx];
+  const allowed =
+    (current.status === "open" && status === "acknowledged") ||
+    (current.status === "acknowledged" && status === "resolved");
+  if (!allowed) {
+    return { ok: false, error: `Cannot move escalation from "${current.status}" to "${status}".` };
+  }
+
+  const escalations = [...seed.escalations];
+  escalations[idx] = {
+    ...current,
+    status,
+    ...(status === "acknowledged" ? { acknowledgedAt: now } : { resolvedAt: now }),
+  };
+  let next = { ...seed, escalations };
+  next = audit(
+    next,
+    current.placementId,
+    `escalation_${status}`,
+    `${current.summary} — ${status}`,
+    status === "acknowledged" ? current.escalatedTo ?? SENIOR_MANAGER_NAME : CURRENT_OPERATOR_NAME,
+    now,
+  );
   return { ok: true, value: next };
 }
