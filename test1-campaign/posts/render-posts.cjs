@@ -8,6 +8,8 @@ const outputs = [
   ['1', 'post-01-construction-backlog.png'],
   ['2', 'post-02-better-hiring-brief.png'],
   ['3', 'post-03-us-hours-readiness.png'],
+  ['4', 'post-01-construction-backlog-illustrated.png'],
+  ['5', 'post-03-us-hours-readiness-illustrated.png'],
 ];
 
 (async () => {

@@ -133,6 +133,65 @@
     .p3-footer .modes { display: flex; align-items: center; gap: 9px; color: #cbd4ce; font-size: 16px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
     .p3-footer .modes i { width: 4px; height: 4px; border-radius: 50%; background: var(--green); }
     .p3-footer .url { padding: 14px 19px; border-radius: 999px; background: var(--green); color: #072411; }
+
+    /* POST 04 — ILLUSTRATED CONSTRUCTION VARIANT */
+    #post-4 {
+      background:
+        radial-gradient(circle at 81% 68%, rgba(27,224,116,.22), transparent 34%),
+        linear-gradient(rgba(7,10,9,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(7,10,9,.045) 1px, transparent 1px),
+        var(--paper);
+      background-size: auto, 48px 48px, 48px 48px, auto;
+      color: var(--ink);
+      padding: 56px 62px 48px;
+    }
+    .p4-top { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between; }
+    .p4-top .brand-logo { width: 340px; height: 64px; }
+    .p4-top .tag { color: #076b37; background: rgba(27,224,116,.14); border: 1px solid rgba(7,149,74,.2); }
+    .p4-copy { position: relative; z-index: 4; margin-top: 73px; width: 900px; }
+    .p4-copy .eyebrow { color: var(--green-dark); }
+    .p4-copy h1 { margin: 18px 0 0; max-width: 900px; font-size: 79px; line-height: .97; letter-spacing: -.06em; font-weight: 800; }
+    .p4-copy h1 span { color: #09b95b; }
+    .p4-copy p { margin: 26px 0 0; max-width: 690px; font-size: 23px; line-height: 1.4; color: #475048; }
+    .p4-orbit { position: absolute; z-index: 1; right: -85px; bottom: 61px; width: 700px; height: 700px; border-radius: 50%; background: linear-gradient(145deg, rgba(27,224,116,.24), rgba(66,138,255,.09)); border: 1px solid rgba(27,224,116,.28); box-shadow: 0 0 0 38px rgba(27,224,116,.035); }
+    .p4-person { position: absolute; z-index: 2; right: -42px; bottom: 16px; width: 760px; height: 775px; object-fit: contain; object-position: right bottom; filter: drop-shadow(0 28px 35px rgba(9,24,15,.20)); }
+    .p4-roles { position: absolute; z-index: 4; left: 62px; bottom: 186px; width: 405px; padding: 21px; border: 1px solid rgba(7,10,9,.13); border-radius: 24px; background: rgba(255,255,255,.89); box-shadow: 0 22px 56px rgba(18,42,27,.13); backdrop-filter: blur(16px); }
+    .p4-roles strong { display: block; margin-bottom: 14px; color: #677068; font-size: 14px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    .p4-role { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 18px; font-weight: 700; }
+    .p4-role + .p4-role { border-top: 1px solid rgba(7,10,9,.1); }
+    .p4-role i { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 5px rgba(27,224,116,.14); }
+    .p4-footer { position: absolute; z-index: 5; left: 62px; bottom: 48px; display: flex; align-items: center; gap: 18px; }
+    .p4-footer .url { padding: 14px 20px; border-radius: 999px; background: var(--ink); color: #fff; }
+    .p4-footer .mini { color: #5e685f; font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+
+    /* POST 05 — ILLUSTRATED CANDIDATE VARIANT */
+    #post-5 {
+      color: #fff;
+      padding: 55px 62px 48px;
+      background:
+        radial-gradient(circle at 78% 67%, rgba(27,224,116,.25), transparent 31%),
+        radial-gradient(circle at 12% 88%, rgba(66,138,255,.12), transparent 28%),
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        var(--ink);
+      background-size: auto, auto, 40px 40px, 40px 40px, auto;
+    }
+    .p5-top { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between; }
+    .p5-top .tag { color: var(--green); border: 1px solid rgba(27,224,116,.28); background: rgba(27,224,116,.08); }
+    .p5-copy { position: relative; z-index: 5; margin-top: 61px; width: 910px; }
+    .p5-copy .eyebrow { color: var(--green); }
+    .p5-copy h1 { margin: 17px 0 0; max-width: 900px; font-size: 70px; line-height: .99; letter-spacing: -.055em; font-weight: 800; }
+    .p5-copy h1 span { color: var(--green); }
+    .p5-copy p { margin: 22px 0 0; max-width: 690px; color: #bdc8c0; font-size: 21px; line-height: 1.4; }
+    .p5-halo { position: absolute; z-index: 1; right: -135px; bottom: 53px; width: 710px; height: 710px; border-radius: 50%; background: radial-gradient(circle at 42% 38%, rgba(255,255,255,.14), rgba(27,224,116,.12) 42%, rgba(27,224,116,.025) 68%); border: 1px solid rgba(27,224,116,.25); box-shadow: 0 0 80px rgba(27,224,116,.1); }
+    .p5-person { position: absolute; z-index: 2; right: -34px; bottom: 3px; width: 625px; height: 755px; object-fit: contain; object-position: right bottom; filter: drop-shadow(0 30px 35px rgba(0,0,0,.42)); }
+    .p5-questions { position: absolute; z-index: 4; left: 62px; bottom: 181px; width: 505px; display: grid; gap: 10px; }
+    .p5-question { position: relative; min-height: 92px; display: flex; align-items: center; padding: 16px 47px 16px 72px; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; background: rgba(9,14,11,.77); box-shadow: 0 14px 32px rgba(0,0,0,.24); backdrop-filter: blur(18px); font-size: 19px; line-height: 1.22; font-weight: 600; }
+    .p5-question b { position: absolute; left: 14px; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: var(--green); color: #062512; font-size: 15px; }
+    .p5-question i { position: absolute; right: 17px; color: var(--green); font-size: 21px; font-style: normal; }
+    .p5-footer { position: absolute; z-index: 5; left: 62px; right: 62px; bottom: 46px; display: flex; align-items: center; justify-content: space-between; }
+    .p5-footer .modes { color: #c3cdc6; font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .p5-footer .url { padding: 14px 19px; border-radius: 999px; background: var(--green); color: #072411; }
   </style>
 </head>
 <body>
@@ -212,6 +271,49 @@
       </section>
       <div class="p3-note"><span>Clarity now</span> prevents frustration later.</div>
       <footer class="p3-footer"><div class="modes"><span>Full-time</span><i></i><span>Remote</span><i></i><span>U.S. teams</span></div><span class="url">f5globaltalent.com/jobs</span></footer>
+    </article>
+
+    <article class="post" id="post-4" aria-label="Illustrated F5 Hiring Solutions construction operations post">
+      <div class="p4-top">
+        <img class="brand-logo" src="./assets/f5-hiring-solutions-logo.svg" alt="F5 Hiring Solutions" />
+        <div class="tag">Construction + AEC</div>
+      </div>
+      <section class="p4-copy">
+        <div class="eyebrow">The backlog isn’t always on site</div>
+        <h1>Your construction backlog may be sitting <span>behind a desk.</span></h1>
+        <p>Build full-time remote capacity around the desk-based work that keeps projects moving.</p>
+      </section>
+      <div class="p4-orbit" aria-hidden="true"></div>
+      <img class="p4-person" src="./assets/construction-estimator.png" alt="Illustration of a construction estimator working with drawings" />
+      <section class="p4-roles">
+        <strong>Where remote capacity fits</strong>
+        <div class="p4-role"><i></i>Estimating &amp; takeoffs</div>
+        <div class="p4-role"><i></i>CAD &amp; Revit production</div>
+        <div class="p4-role"><i></i>Permit coordination</div>
+        <div class="p4-role"><i></i>Project documentation</div>
+      </section>
+      <footer class="p4-footer"><span class="url">f5hiringsolutions.com</span><span class="mini">Managed by F5</span></footer>
+    </article>
+
+    <article class="post" id="post-5" aria-label="Illustrated F5 Global Talent candidate readiness post">
+      <div class="p5-top">
+        <div class="global-brand"><img src="./assets/f5-global-talent-logo.png" alt="F5 Global Talent icon" /><span>F5 Global Talent<small>Build your global career</small></span></div>
+        <div class="tag">Candidate check</div>
+      </div>
+      <section class="p5-copy">
+        <div class="eyebrow">Before you apply</div>
+        <h1>Ready for a U.S.-hours role? Ask yourself <span>4 questions.</span></h1>
+        <p>Clarity now prevents frustration later.</p>
+      </section>
+      <div class="p5-halo" aria-hidden="true"></div>
+      <img class="p5-person" src="./assets/remote-professional.png" alt="Illustration of a remote professional working with a U.S. team" />
+      <section class="p5-questions">
+        <div class="p5-question"><b>01</b>Can I protect a consistent schedule?<i>✓</i></div>
+        <div class="p5-question"><b>02</b>Can I explain my work clearly?<i>✓</i></div>
+        <div class="p5-question"><b>03</b>Do I enjoy owning outcomes?<i>✓</i></div>
+        <div class="p5-question"><b>04</b>Am I looking for a long-term, full-time role?<i>✓</i></div>
+      </section>
+      <footer class="p5-footer"><span class="modes">Full-time · Remote · U.S. teams</span><span class="url">f5globaltalent.com/jobs</span></footer>
     </article>
   </main>
   <script>

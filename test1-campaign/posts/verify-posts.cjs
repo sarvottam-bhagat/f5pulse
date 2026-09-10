@@ -9,6 +9,8 @@ const pngs = [
   'post-01-construction-backlog.png',
   'post-02-better-hiring-brief.png',
   'post-03-us-hours-readiness.png',
+  'post-01-construction-backlog-illustrated.png',
+  'post-03-us-hours-readiness-illustrated.png',
 ];
 const requiredFiles = [
   'index.html',
@@ -17,6 +19,8 @@ const requiredFiles = [
   ...pngs,
   'assets/f5-hiring-solutions-logo.svg',
   'assets/f5-global-talent-logo.png',
+  'assets/construction-estimator.png',
+  'assets/remote-professional.png',
 ];
 const requiredPackText = [
   '## Post 1',
@@ -55,7 +59,7 @@ function assert(condition, message) {
   });
   try {
     const source = pathToFileURL(path.join(root, 'index.html')).href;
-    for (let id = 1; id <= 3; id += 1) {
+    for (let id = 1; id <= 5; id += 1) {
       const page = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
       const browserErrors = [];
       page.on('console', message => { if (message.type() === 'error') browserErrors.push(message.text()); });
@@ -80,7 +84,7 @@ function assert(condition, message) {
     await browser.close();
   }
 
-  console.log('PASS: 3/3 post graphics are 1080x1350 PNGs.');
+  console.log('PASS: 5/5 post graphics (3 originals + 2 illustrated variants) are 1080x1350 PNGs.');
   console.log('PASS: all logos and fonts load with no browser errors.');
   console.log('PASS: publishing pack includes 3 captions, 3 prompts, tools, audiences, schedule, and fact sources.');
 })();

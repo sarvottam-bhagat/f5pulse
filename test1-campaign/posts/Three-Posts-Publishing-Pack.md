@@ -24,7 +24,8 @@ The mix below gives F5 Hiring Solutions two demand-generation posts and F5 Globa
 **Brand:** F5 Hiring Solutions  
 **Audience:** U.S. construction and AEC owners, operations leaders, project executives, and hiring managers  
 **Format:** 1080 × 1350 LinkedIn/Instagram static  
-**Visual:** `post-01-construction-backlog.png`
+**Recommended visual:** `post-01-construction-backlog-illustrated.png`  
+**Alternate infographic visual:** `post-01-construction-backlog.png`
 
 ### Publish-ready copy
 
@@ -55,6 +56,7 @@ Create a premium 1080 × 1350 editorial social graphic for F5 Hiring Solutions, 
 - Codex: audience research, concept, copywriting, art direction, and layout
 - Official F5 Hiring Solutions website: service and sector fact-checking
 - Official F5 Hiring Solutions logo asset
+- ChatGPT Image: user-generated transparent construction-estimator illustration
 - HTML/SVG + CSS: deterministic artwork and typography
 - Playwright/Chromium: pixel-accurate PNG export
 
@@ -107,7 +109,8 @@ Create a premium 1080 × 1350 saveable hiring-framework graphic for F5 Hiring So
 **Brand:** F5 Global Talent  
 **Audience:** Skilled professionals in India and the Philippines considering long-term remote work with U.S. teams  
 **Format:** 1080 × 1350 LinkedIn/Instagram static  
-**Visual:** `post-03-us-hours-readiness.png`
+**Recommended visual:** `post-03-us-hours-readiness-illustrated.png`  
+**Alternate infographic visual:** `post-03-us-hours-readiness.png`
 
 ### Publish-ready copy
 
@@ -135,6 +138,7 @@ Create a premium 1080 × 1350 candidate-focused social graphic for F5 Global Tal
 - Codex: brand/audience research, copywriting, art direction, and layout
 - Official F5 Global Talent website: employment model, location, and candidate journey fact-checking
 - Official F5 Global Talent logo asset
+- ChatGPT Image: user-generated transparent remote-professional illustration
 - HTML/SVG + CSS: deterministic artwork and typography
 - Playwright/Chromium: pixel-accurate PNG export
 
@@ -156,3 +160,5 @@ Create a premium 1080 × 1350 candidate-focused social graphic for F5 Global Tal
 - No salary, price, placement-time, retention, or candidate-count claim appears in the creative, so every post remains evergreen.
 - Every post uses a distinct content job: sector relevance, hiring education, and candidate fit.
 - Captions are written separately for the buyer and candidate audiences; the brands are not treated as interchangeable.
+- Posts 1 and 3 include character-led illustrated variants to reflect the established F5 Instagram visual language. The original infographic versions are retained as alternates.
+- The two supplied character PNGs are used as transparent supporting assets; all brand copy, logos, spacing, and final composition remain deterministic and editable.
