@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F5 Test 1 — Three Social Posts</title>
+  <style>
+    @font-face { font-family: Inter; src: url('./assets/inter-regular.woff2') format('woff2'); font-weight: 400; }
+    @font-face { font-family: Inter; src: url('./assets/inter-semibold.woff2') format('woff2'); font-weight: 600; }
+    @font-face { font-family: Inter; src: url('./assets/inter-bold.woff2') format('woff2'); font-weight: 700; }
+    @font-face { font-family: Inter; src: url('./assets/inter-black.woff2') format('woff2'); font-weight: 800; }
+
+    :root {
+      --ink: #070a09;
+      --ink-soft: #121613;
+      --bone: #f4f1e9;
+      --paper: #fbfaf6;
+      --green: #1be074;
+      --green-dark: #07954a;
+      --muted: #9ea9a2;
+      --line: rgba(27, 224, 116, .22);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #292d2b; font-family: Inter, Arial, sans-serif; }
+    body { display: grid; place-items: center; }
+    .stage { width: 1080px; height: 1350px; position: relative; overflow: hidden; }
+    .post { position: absolute; inset: 0; width: 1080px; height: 1350px; overflow: hidden; }
+    .post:not(.active) { display: none; }
+    .brand-logo { display: block; object-fit: contain; }
+    .brand-chip { display: flex; align-items: center; justify-content: center; height: 74px; padding: 14px 20px; background: rgba(251,250,246,.98); border: 1px solid rgba(255,255,255,.42); border-radius: 17px; box-shadow: 0 14px 42px rgba(0,0,0,.2); }
+    .brand-chip img { width: 304px; height: 48px; }
+    .eyebrow { font-size: 18px; line-height: 1; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; }
+    .tag { display: inline-flex; align-items: center; gap: 12px; border-radius: 999px; padding: 13px 18px; font-size: 17px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .tag::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 16px currentColor; }
+    .url { font-size: 18px; font-weight: 600; letter-spacing: .04em; }
+
+    /* POST 01 — CONSTRUCTION BACKLOG */
+    #post-1 {
+      background:
+        radial-gradient(circle at 82% 42%, rgba(27,224,116,.16), transparent 29%),
+        linear-gradient(rgba(27,224,116,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27,224,116,.055) 1px, transparent 1px),
+        var(--ink);
+      background-size: auto, 36px 36px, 36px 36px, auto;
+      color: var(--paper);
+      padding: 58px 64px 48px;
+    }
+    #post-1::after {
+      content: ''; position: absolute; width: 520px; height: 520px; right: -230px; top: -240px;
+      border: 1px solid rgba(27,224,116,.28); border-radius: 50%; box-shadow: 0 0 80px rgba(27,224,116,.08);
+    }
+    .p1-top { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; }
+    .p1-top .tag { color: var(--green); background: rgba(27,224,116,.08); border: 1px solid rgba(27,224,116,.25); }
+    .p1-copy { position: relative; z-index: 2; margin-top: 72px; }
+    .p1-copy .eyebrow { color: var(--green); }
+    .p1-copy h1 { margin: 21px 0 0; max-width: 930px; font-size: 90px; line-height: .96; letter-spacing: -.064em; font-weight: 800; }
+    .p1-copy h1 span { color: var(--green); }
+    .p1-copy p { margin: 30px 0 0; max-width: 820px; font-size: 25px; line-height: 1.42; color: #c8d0cb; }
+    .p1-system { position: absolute; z-index: 2; left: 64px; right: 64px; bottom: 100px; height: 420px; border: 1px solid rgba(255,255,255,.14); border-radius: 30px; background: linear-gradient(135deg, rgba(255,255,255,.065), rgba(255,255,255,.018)); backdrop-filter: blur(18px); box-shadow: 0 28px 80px rgba(0,0,0,.35); overflow: hidden; }
+    .p1-system::before { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 24%, rgba(27,224,116,.1) 49%, transparent 72%); }
+    .blueprint { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .9; }
+    .roles { position: absolute; left: 38px; top: 33px; width: 468px; display: grid; gap: 12px; }
+    .role { display: flex; align-items: center; min-height: 55px; padding: 10px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 13px; background: rgba(4,8,6,.72); font-size: 19px; font-weight: 600; color: #eff6f1; box-shadow: 0 8px 22px rgba(0,0,0,.22); }
+    .role b { flex: 0 0 auto; display: grid; place-items: center; width: 30px; height: 30px; margin-right: 12px; border-radius: 8px; background: var(--green); color: #062512; font-size: 14px; }
+    .system-label { position: absolute; right: 35px; top: 31px; width: 330px; padding: 19px 21px; background: var(--green); color: #062512; border-radius: 17px; box-shadow: 0 14px 38px rgba(27,224,116,.22); }
+    .system-label small { display: block; font-size: 14px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; opacity: .7; }
+    .system-label strong { display: block; margin-top: 7px; font-size: 28px; line-height: 1.06; letter-spacing: -.035em; }
+    .p1-footer { position: absolute; left: 64px; right: 64px; bottom: 47px; display: flex; align-items: center; justify-content: space-between; color: #aab4ae; }
+    .p1-footer .rule { height: 1px; flex: 1; margin: 0 22px; background: rgba(255,255,255,.18); }
+
+    /* POST 02 — HIRING BRIEF */
+    #post-2 { background: var(--bone); color: var(--ink); padding: 58px 64px 48px; }
+    #post-2::before { content: ''; position: absolute; inset: 0; opacity: .44; background: linear-gradient(rgba(7,10,9,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(7,10,9,.055) 1px, transparent 1px); background-size: 54px 54px; mask-image: linear-gradient(to bottom, #000 0%, transparent 77%); }
+    .p2-top { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; }
+    .p2-top .brand-logo { width: 344px; height: 64px; }
+    .p2-top .tag { background: var(--ink); color: var(--green); }
+    .p2-copy { position: relative; z-index: 2; margin-top: 76px; max-width: 950px; }
+    .p2-copy .eyebrow { color: var(--green-dark); }
+    .p2-copy h1 { margin: 20px 0 0; font-size: 88px; line-height: .96; letter-spacing: -.063em; font-weight: 800; }
+    .p2-copy h1 span { position: relative; white-space: nowrap; }
+    .p2-copy h1 span::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; height: 8px; border-radius: 99px; background: var(--green); transform: rotate(-1deg); }
+    .p2-copy p { margin: 28px 0 0; max-width: 850px; font-size: 24px; line-height: 1.45; color: #424943; }
+    .brief-grid { position: relative; z-index: 2; margin-top: 54px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .brief-card { position: relative; min-height: 190px; padding: 24px 26px 22px 94px; background: rgba(255,255,255,.66); border: 1px solid rgba(7,10,9,.13); border-radius: 22px; box-shadow: 0 12px 35px rgba(24,37,29,.07); }
+    .brief-card .num { position: absolute; left: 24px; top: 24px; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; background: var(--green); font-size: 19px; font-weight: 800; }
+    .brief-card strong { display: block; font-size: 27px; line-height: 1.07; letter-spacing: -.025em; }
+    .brief-card p { margin: 11px 0 0; font-size: 18px; line-height: 1.34; color: #545d56; }
+    .p2-flow { position: relative; z-index: 2; margin-top: 33px; display: flex; align-items: center; gap: 17px; color: #566058; font-size: 17px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+    .p2-flow::after { content: ''; flex: 1; height: 1px; background: rgba(7,10,9,.16); }
+    .p2-flow b { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--green); color: var(--ink); font-size: 23px; }
+    .p2-cta { position: absolute; z-index: 2; left: 64px; right: 64px; bottom: 48px; height: 116px; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; border-radius: 23px; background: var(--ink); color: #fff; box-shadow: 0 22px 50px rgba(0,0,0,.18); }
+    .p2-cta strong { font-size: 26px; letter-spacing: -.025em; }
+    .p2-cta .arrow { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: var(--ink); font-size: 31px; }
+    .p2-cta .url { margin-left: auto; margin-right: 25px; color: #aeb7b0; }
+
+    /* POST 03 — CANDIDATE READINESS */
+    #post-3 {
+      color: #fff; padding: 55px 62px 48px;
+      background:
+        radial-gradient(circle at 83% 15%, rgba(27,224,116,.25), transparent 30%),
+        radial-gradient(circle at 14% 89%, rgba(66,138,255,.12), transparent 30%),
+        var(--ink);
+    }
+    #post-3::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 40px 40px; }
+    .p3-top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; }
+    .global-brand { display: flex; align-items: center; gap: 14px; }
+    .global-brand img { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+    .global-brand span { font-size: 26px; line-height: 1.02; font-weight: 800; letter-spacing: -.03em; }
+    .global-brand span small { display: block; margin-top: 4px; color: var(--green); font-size: 16px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+    .p3-top .tag { color: var(--green); border: 1px solid rgba(27,224,116,.28); background: rgba(27,224,116,.08); }
+    .p3-copy { position: relative; z-index: 2; margin-top: 64px; }
+    .p3-copy .eyebrow { color: var(--green); }
+    .p3-copy h1 { margin: 18px 0 0; max-width: 930px; font-size: 71px; line-height: 1.01; letter-spacing: -.055em; font-weight: 800; }
+    .p3-copy h1 span { color: var(--green); }
+    .questions { position: relative; z-index: 2; margin-top: 49px; display: grid; gap: 13px; }
+    .question { position: relative; min-height: 132px; padding: 23px 78px 22px 101px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,.13); border-radius: 22px; background: linear-gradient(104deg, rgba(255,255,255,.08), rgba(255,255,255,.025)); box-shadow: 0 14px 34px rgba(0,0,0,.2); }
+    .question .num { position: absolute; left: 22px; display: grid; place-items: center; width: 55px; height: 55px; border-radius: 16px; background: var(--green); color: #082613; font-size: 21px; font-weight: 800; }
+    .question p { margin: 0; font-size: 27px; line-height: 1.22; font-weight: 600; letter-spacing: -.022em; }
+    .question .check { position: absolute; right: 23px; color: var(--green); font-size: 29px; font-weight: 700; }
+    .p3-note { position: relative; z-index: 2; margin: 34px 0 0 23px; font-size: 23px; line-height: 1.2; color: #bfc9c2; letter-spacing: -.02em; }
+    .p3-note span { color: var(--green); font-weight: 700; }
+    .p3-footer { position: absolute; z-index: 2; left: 62px; right: 62px; bottom: 45px; display: flex; align-items: center; justify-content: space-between; }
+    .p3-footer .modes { display: flex; align-items: center; gap: 9px; color: #cbd4ce; font-size: 16px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .p3-footer .modes i { width: 4px; height: 4px; border-radius: 50%; background: var(--green); }
+    .p3-footer .url { padding: 14px 19px; border-radius: 999px; background: var(--green); color: #072411; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <article class="post" id="post-1" aria-label="F5 Hiring Solutions construction operations post">
+      <div class="p1-top">
+        <div class="brand-chip"><img class="brand-logo" src="./assets/f5-hiring-solutions-logo.svg" alt="F5 Hiring Solutions" /></div>
+        <div class="tag">Construction + AEC</div>
+      </div>
+      <section class="p1-copy">
+        <div class="eyebrow">The backlog isn’t always on site</div>
+        <h1>Your construction backlog may be sitting <span>behind a desk.</span></h1>
+        <p>Build remote capacity around the desk-based work that keeps projects moving.</p>
+      </section>
+      <section class="p1-system">
+        <svg class="blueprint" viewBox="0 0 952 420" aria-hidden="true">
+          <g fill="none" stroke="#1be074" stroke-width="2" opacity=".42">
+            <path d="M552 344H905M603 344V192l98-58 109 61v149M701 134v210M810 195v149" />
+            <path d="M626 327v-48h46v48M728 327v-74h51v74M824 327v-103h46v103" />
+            <path d="M570 369H918M591 385H888" />
+            <path d="M521 87H882M543 75v24M861 75v24" stroke-dasharray="7 8" />
+            <path d="M514 115h395v269H514z" opacity=".13" />
+          </g>
+          <g fill="none" stroke="#fff" stroke-width="1.4" opacity=".16">
+            <path d="M532 48v336M588 48v336M644 48v336M700 48v336M756 48v336M812 48v336M868 48v336" />
+            <path d="M510 68h420M510 124h420M510 180h420M510 236h420M510 292h420M510 348h420" />
+          </g>
+          <path d="M505 281C576 281 569 108 667 108h151" fill="none" stroke="#1be074" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 11" opacity=".85" />
+          <circle cx="505" cy="281" r="7" fill="#1be074"/><circle cx="818" cy="108" r="7" fill="#1be074"/>
+        </svg>
+        <div class="roles">
+          <div class="role"><b>01</b>Estimating &amp; takeoffs</div>
+          <div class="role"><b>02</b>CAD &amp; Revit production</div>
+          <div class="role"><b>03</b>Permit coordination</div>
+          <div class="role"><b>04</b>Project documentation</div>
+          <div class="role"><b>05</b>Operations support</div>
+        </div>
+        <div class="system-label"><small>Remote capacity</small><strong>Built around your workflow.</strong></div>
+      </section>
+      <footer class="p1-footer"><span class="eyebrow">Full-time talent</span><span class="rule"></span><span class="url">f5hiringsolutions.com</span></footer>
+    </article>
+
+    <article class="post" id="post-2" aria-label="F5 Hiring Solutions hiring brief post">
+      <div class="p2-top">
+        <img class="brand-logo" src="./assets/f5-hiring-solutions-logo.svg" alt="F5 Hiring Solutions" />
+        <div class="tag">15-minute brief</div>
+      </div>
+      <section class="p2-copy">
+        <div class="eyebrow">Before the first résumé</div>
+        <h1>A better shortlist starts with a <span>better brief.</span></h1>
+        <p>Make these four decisions before anyone starts sourcing.</p>
+      </section>
+      <section class="brief-grid">
+        <div class="brief-card"><div class="num">01</div><strong>Outcome</strong><p>What problem must this person own?</p></div>
+        <div class="brief-card"><div class="num">02</div><strong>Must-haves</strong><p>Which skills are genuinely non-negotiable?</p></div>
+        <div class="brief-card"><div class="num">03</div><strong>Working hours</strong><p>When must they overlap with your team?</p></div>
+        <div class="brief-card"><div class="num">04</div><strong>90-day win</strong><p>What should success look like by then?</p></div>
+      </section>
+      <div class="p2-flow"><span>Role clarity</span><b>→</b><span>Relevant shortlist</span></div>
+      <footer class="p2-cta"><strong>Bring the problem. We’ll define the role.</strong><span class="url">f5hiringsolutions.com</span><span class="arrow">→</span></footer>
+    </article>
+
+    <article class="post" id="post-3" aria-label="F5 Global Talent candidate readiness post">
+      <div class="p3-top">
+        <div class="global-brand"><img src="./assets/f5-global-talent-logo.png" alt="F5 Global Talent icon" /><span>F5 Global Talent<small>Build your global career</small></span></div>
+        <div class="tag">Candidate check</div>
+      </div>
+      <section class="p3-copy">
+        <div class="eyebrow">Before you apply</div>
+        <h1>Ready for a U.S.-hours role? Ask yourself <span>4 questions.</span></h1>
+      </section>
+      <section class="questions">
+        <div class="question"><span class="num">01</span><p>Can I protect a consistent schedule?</p><span class="check">✓</span></div>
+        <div class="question"><span class="num">02</span><p>Can I explain my work clearly?</p><span class="check">✓</span></div>
+        <div class="question"><span class="num">03</span><p>Do I enjoy owning outcomes?</p><span class="check">✓</span></div>
+        <div class="question"><span class="num">04</span><p>Am I looking for a long-term, full-time role?</p><span class="check">✓</span></div>
+      </section>
+      <div class="p3-note"><span>Clarity now</span> prevents frustration later.</div>
+      <footer class="p3-footer"><div class="modes"><span>Full-time</span><i></i><span>Remote</span><i></i><span>U.S. teams</span></div><span class="url">f5globaltalent.com/jobs</span></footer>
+    </article>
+  </main>
+  <script>
+    const requested = new URLSearchParams(location.search).get('post') || '1';
+    document.querySelector(`#post-${requested}`)?.classList.add('active');
+  </script>
+</body>
+</html>
