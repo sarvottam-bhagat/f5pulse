@@ -21,6 +21,15 @@ const SUGGESTIONS: { key: CapabilityKey; label: string }[] = [
   { key: "recommend_escalation", label: "Should this be escalated?" },
 ];
 
+const GENERAL_SUGGESTIONS = [
+  "Who needs my attention today?",
+  "Which clients should I contact today?",
+  "How many placements are at risk?",
+  "Which issues need escalation?",
+  "What follow-ups are due?",
+  "Summarize portfolio health",
+];
+
 const CAPABILITY_PROMPTS: Record<CapabilityKey, string> = {
   summarize: "Summarize this placement",
   explain_risk: "Why is this at risk?",
@@ -58,6 +67,12 @@ function ChatPageInner() {
   const currentPending = chat.pending;
   const currentFailed = Boolean(chat.sendError);
   const hasConversation = messages.length > 0;
+  const welcomeSuggestions = context
+    ? SUGGESTIONS.map((suggestion) => ({
+        label: suggestion.label,
+        prompt: CAPABILITY_PROMPTS[suggestion.key],
+      }))
+    : GENERAL_SUGGESTIONS.map((prompt) => ({ label: prompt, prompt }));
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -203,8 +218,8 @@ function ChatPageInner() {
               <div className="mt-7">{composer("welcome")}</div>
               {currentFailed && <div className="mx-auto mt-4 max-w-2xl text-left"><RetryableError message={chat.sendError ?? "The response could not be completed."} onRetry={handleRetry} /></div>}
               <div className="mx-auto mt-7 flex max-w-2xl flex-wrap justify-center gap-2">
-                {SUGGESTIONS.map((suggestion) => (
-                  <button type="button" key={suggestion.key} onClick={() => handleCapability(suggestion.key)} disabled={!context} className="tap-target rounded-full border border-border bg-white px-4 text-sm text-text-secondary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-45">
+                {welcomeSuggestions.map((suggestion) => (
+                  <button type="button" key={suggestion.prompt} onClick={() => handleSend(suggestion.prompt)} disabled={currentPending || chat.status !== "ready"} className="tap-target rounded-full border border-border bg-white px-4 text-sm text-text-secondary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-45">
                     {suggestion.label}
                   </button>
                 ))}
