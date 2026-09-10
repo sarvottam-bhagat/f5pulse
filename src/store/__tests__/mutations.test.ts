@@ -68,6 +68,35 @@ describe("logCommunication", () => {
     if (!result.ok) return;
     expect(result.value.communications).toHaveLength(1);
   });
+
+  it("adds an open follow-up when a next follow-up date is provided", () => {
+    const seed = seedWithPlacement();
+    const result = logCommunication(
+      seed,
+      {
+        placementId: "placement_1",
+        subjectType: "client",
+        channel: "email",
+        direction: "outbound",
+        summary: "Check whether the client received the revised schedule.",
+        owner: "Karan",
+        nextFollowUpDate: "2026-09-09",
+      },
+      NOW,
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.followups).toContainEqual(
+      expect.objectContaining({
+        placementId: "placement_1",
+        dueDate: "2026-09-09",
+        description: "Check whether the client received the revised schedule.",
+        owner: "Karan",
+      }),
+    );
+    expect(result.value.followups[0]?.completedAt).toBeUndefined();
+  });
 });
 
 describe("logOutcome", () => {

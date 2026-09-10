@@ -156,6 +156,22 @@ export function logCommunication(seed: Seed, input: LogCommunicationInput, now: 
   if (!placement) return { ok: false, error: "Placement not found." };
   const record = { id: nextId("comm"), createdAt: now, ...input };
   let next = { ...seed, communications: [...seed.communications, record] };
+  if (input.nextFollowUpDate) {
+    next = {
+      ...next,
+      followups: [
+        ...next.followups,
+        {
+          id: nextId("followup"),
+          placementId: input.placementId,
+          dueDate: input.nextFollowUpDate,
+          description: input.summary,
+          owner: input.owner,
+          createdAt: now,
+        },
+      ],
+    };
+  }
   next = audit(next, input.placementId, "communication_logged", input.summary, input.owner, now);
   return { ok: true, value: next };
 }
