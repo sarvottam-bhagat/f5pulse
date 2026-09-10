@@ -105,7 +105,16 @@
     #post-3::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 40px 40px; }
     .p3-top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; }
     .global-brand { display: flex; align-items: center; gap: 14px; }
-    .global-brand img { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+    .global-brand img {
+      width: 76px;
+      height: 76px;
+      padding: 7px;
+      object-fit: contain;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 18px;
+      background: rgba(251,250,246,.96);
+      box-shadow: 0 12px 36px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.9);
+    }
     .global-brand span { font-size: 26px; line-height: 1.02; font-weight: 800; letter-spacing: -.03em; }
     .global-brand span small { display: block; margin-top: 4px; color: var(--green); font-size: 16px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
     .p3-top .tag { color: var(--green); border: 1px solid rgba(27,224,116,.28); background: rgba(27,224,116,.08); }
