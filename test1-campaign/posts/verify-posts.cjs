@@ -16,6 +16,7 @@ const requiredFiles = [
   'index.html',
   'render-posts.cjs',
   'Three-Posts-Publishing-Pack.md',
+  'Prompts-and-Tools-Only.md',
   ...pngs,
   'assets/f5-hiring-solutions-logo.svg',
   'assets/f5-global-talent-logo.png',
@@ -27,7 +28,7 @@ const requiredPackText = [
   '## Post 2',
   '## Post 3',
   '### Publish-ready copy',
-  '### Visual-generation prompt',
+  '### Final composition prompt used in Codex',
   '### Tools used',
   'https://f5hiringsolutions.com/',
   'https://www.f5globaltalent.com/',
@@ -52,6 +53,11 @@ function assert(condition, message) {
   for (const phrase of requiredPackText) {
     assert(pack.includes(phrase), `Publishing pack missing: ${phrase}`);
   }
+
+  const promptSheet = fs.readFileSync(path.join(root, 'Prompts-and-Tools-Only.md'), 'utf8');
+  assert((promptSheet.match(/## Piece [123]/g) || []).length === 3, 'Prompt sheet must contain all three pieces');
+  assert((promptSheet.match(/### Tools used/g) || []).length === 3, 'Prompt sheet must contain three tool lists');
+  assert(promptSheet.includes('Character prompt used with ChatGPT Image'), 'Prompt sheet missing character-generation disclosure');
 
   const browser = await chromium.launch({
     headless: true,
@@ -86,5 +92,6 @@ function assert(condition, message) {
 
   console.log('PASS: 5/5 post graphics (3 originals + 2 illustrated variants) are 1080x1350 PNGs.');
   console.log('PASS: all logos and fonts load with no browser errors.');
-  console.log('PASS: publishing pack includes 3 captions, 3 prompts, tools, audiences, schedule, and fact sources.');
+  console.log('PASS: publishing pack includes 3 captions, prompts, tools, audiences, schedule, and fact sources.');
+  console.log('PASS: separate prompt sheet includes all 3 pieces and 3 tool lists.');
 })();

@@ -47,9 +47,13 @@ What is stuck in your pipeline right now?
 
 #Construction #AEC #RemoteWorkforce #ConstructionOperations #F5HiringSolutions
 
-### Visual-generation prompt
+### AI character-generation prompt used
 
-Create a premium 1080 × 1350 editorial social graphic for F5 Hiring Solutions, aimed at U.S. construction and AEC leaders. Use a near-black background with a precise dark graph-paper grid, restrained neon F5 green, bone-white typography, and subtle liquid-glass depth. Place the official F5 Hiring Solutions logo in a clean white glass chip at top left and a small “CONSTRUCTION + AEC” pill at top right. Main headline: “Your construction backlog may be sitting behind a desk.” Make “behind a desk” green. Under it, add: “Build remote capacity around the desk-based work that keeps projects moving.” In the lower half, show a premium blueprint-style systems panel: five stacked workflow labels—Estimating & takeoffs; CAD & Revit production; Permit coordination; Project documentation; Operations support—feeding through a green dotted path into a simplified architectural elevation. Add a green card reading “REMOTE CAPACITY / Built around your workflow.” Keep it minimal, sharp, businesslike, highly legible on mobile, and free of stock photography. Use exact provided copy only; do not invent statistics or extra claims.
+Create a polished flat-vector corporate illustration for an F5 Hiring Solutions social-media post. Show a confident remote construction estimator or project coordinator at a modern desk, reviewing a large architectural blueprint while using a laptop. Include a calculator, rolled construction drawing, ruler and small desk accessories. The person should look organised, capable and focused. Use clean premium editorial vector styling, rounded geometric shapes, confident black outlines, simplified facial features, natural proportions and restrained shading. Use F5 green #1BE074 as the main accent, supported by blue #428AFF, yellow #FFD94F, red #FF3657, warm neutral skin tones and dark ink #1E1E1E. Deliver a transparent PNG with the complete character and desk visible. No text, logo, watermark, scenery, photorealism or cropped limbs.
+
+### Final composition prompt used in Codex
+
+Create a premium 1080 × 1350 editorial social graphic for F5 Hiring Solutions, aimed at U.S. construction and AEC leaders. Use a warm-white background with a faint precision grid and a soft green circular field behind the supplied transparent construction-estimator illustration. Place the official logo top left and a restrained “CONSTRUCTION + AEC” pill top right. Main headline: “Your construction backlog may be sitting behind a desk.” Make “behind a desk” green. Add: “Build full-time remote capacity around the desk-based work that keeps projects moving.” Place the illustrated estimator in the lower-right and overlay a clean white card listing Estimating & takeoffs, CAD & Revit production, Permit coordination, and Project documentation. Finish with f5hiringsolutions.com and “Managed by F5.” Keep all typography deterministic, mobile-legible and free of invented statistics.
 
 ### Tools used
 
@@ -90,7 +94,7 @@ If you are hiring next quarter, define the outcome now.
 
 #HiringStrategy #RemoteHiring #WorkforcePlanning #ScaleYourTeam #F5HiringSolutions
 
-### Visual-generation prompt
+### Final composition prompt used in Codex
 
 Create a premium 1080 × 1350 saveable hiring-framework graphic for F5 Hiring Solutions. Use an editorial warm-bone background, a faint precision grid, black typography, and F5 green as the only accent. Place the official logo at top left and a black pill marked “15-MINUTE BRIEF” at top right. Main headline: “A better shortlist starts with a better brief.” Underline “better brief” with an organic green marker stroke. Add the line: “Make these four decisions before anyone starts sourcing.” Build a clean 2 × 2 grid of elevated white cards: 01 Outcome — What problem must this person own?; 02 Must-haves — Which skills are genuinely non-negotiable?; 03 Working hours — When must they overlap with your team?; 04 90-day win — What should success look like by then? Finish with a black footer bar: “Bring the problem. We’ll define the role.” and f5hiringsolutions.com. Crisp, restrained, human, trustworthy, and highly legible on mobile. Use exact provided copy; no stock photography and no invented data.
 
@@ -129,9 +133,13 @@ If that matches the way you want to work, explore current openings at f5globalta
 
 #RemoteCareers #JobsInIndia #JobsInPhilippines #GlobalTalent #F5GlobalTalent
 
-### Visual-generation prompt
+### AI character-generation prompt used
 
-Create a premium 1080 × 1350 candidate-focused social graphic for F5 Global Talent. Use a sophisticated near-black background with restrained F5 green glow, faint grid texture, soft glass panels, and clean white typography. Place the provided F5 Global Talent icon at top left beside the typeset name “F5 Global Talent” and the line “BUILD YOUR GLOBAL CAREER.” Put a small green-outlined “CANDIDATE CHECK” pill at top right. Main headline: “Ready for a U.S.-hours role? Ask yourself 4 questions.” Make “4 questions” green. Stack four translucent glass cards with green numbered tiles and checks: 01 Can I protect a consistent schedule?; 02 Can I explain my work clearly?; 03 Do I enjoy owning outcomes?; 04 Am I looking for a long-term, full-time role? Footer: “FULL-TIME • REMOTE • U.S. TEAMS” and a green pill reading f5globaltalent.com/jobs. The tone should feel encouraging and selective, never exploitative or overly corporate. Mobile-first clarity, no fake people, no invented claims, exact copy only.
+Create a polished flat-vector corporate illustration for an F5 Global Talent social-media post. Show a confident young remote professional from South or Southeast Asia working on a laptop with a lightweight headset. The person should appear approachable, skilled and comfortable collaborating with an international team. Include a notebook, coffee cup and small desk accessories. Use clean premium editorial vector styling with rounded geometric forms, confident black outlines, simplified facial features, natural proportions and subtle flat shading. Use F5 green #1BE074 with supporting blue #428AFF, yellow #FFD94F, red #FF3657 and dark ink #1E1E1E. Deliver a transparent PNG with the full character, chair and desk visible. No text, logo, watermark, flags, stereotypes, scenery, photorealism or cropped limbs.
+
+### Final composition prompt used in Codex
+
+Create a premium 1080 × 1350 candidate-focused social graphic for F5 Global Talent using the supplied transparent remote-professional illustration. Use a sophisticated near-black background with restrained F5 green glow, faint grid texture and soft glass depth. Place the official F5 Global Talent icon on a light contrast tile beside the typeset name and “BUILD YOUR GLOBAL CAREER.” Add a “CANDIDATE CHECK” pill. Main headline: “Ready for a U.S.-hours role? Ask yourself 4 questions.” Make “4 questions” green. Position the professional at the lower-right with a green halo behind him. Stack four dark glass cards at lower-left: Can I protect a consistent schedule?; Can I explain my work clearly?; Do I enjoy owning outcomes?; Am I looking for a long-term, full-time role? Finish with “FULL-TIME · REMOTE · U.S. TEAMS” and f5globaltalent.com/jobs. Use exact copy and deterministic typography; no invented claims.
 
 ### Tools used
 
